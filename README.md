@@ -13,20 +13,11 @@ bun test
 ```
 
 ## Scripts
+There are scripts to be found in this project which can help with Advent of Code, like setting up a directory with all the needed files for a day for example. For each script, you can add `--help` to find information about usage.
 
-### Scaffold a day
-When a new day is released on advent of code, we can run a script to scaffold a dictionary with files and the input of said day.
-
+For example:
 ```bash
-bun sd -n name
-bun scaffoldDay -n name
-```
-
-By default it will pick the current day of the month to use to generate the directory name: `DD_<name>`. You can override this with
-
-```bash
-bun sd -n name -d 5
-bun scaffoldDay -n name -d 5
+bun sd --help
 ```
 
 ---

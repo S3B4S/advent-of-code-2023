@@ -3,8 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "scaffoldDay": "bun ./scripts/scaffoldDay.ts",
-    "sd": "bun scaffoldDay"
+    "scaffold-day": "bun ./scripts/scaffold-day.ts",
+    "sd": "bun scaffold-day"
   },
   "devDependencies": {
     "@types/figlet": "^1.5.6",

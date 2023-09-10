@@ -2,12 +2,28 @@ import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
 import { mkdirSync, writeFileSync } from 'fs'
 
-const argv = await yargs(hideBin(process.argv)).argv
+const argv = await yargs(hideBin(process.argv))
+  .command(['scaffold', 'sd'], 'Scaffolds a new day')
+  .example('bun sd -n challenge -d 01', 'Creates a new directory named "01_challenge" with the files "index.ts", "index.test.ts" and "input.txt"')
+  
+  .alias('n', 'name')
+  .describe('n', 'The name of the challenge of the day')
+  .nargs('n', 1)
+  .default('n', 'challenge')
+  
+  .alias('d', 'day')
+  .describe('d', 'The day of the challenge')
+  .nargs('d', 1)
+  .default('d', new Date().getDate().toString().padStart(2, "0"))
+  
+  .demandOption(['n'])
+  .help('h')
+  .alias('h', 'help')
+  .argv
 
-const dayName = argv.n || argv.name || "day"
-const day = argv.d || argv.day || new Date().getDate().toString().padStart(2, "0")
-const targetDir = `./${day}_${dayName}`
+// @TODO trigger api call to get the input file from AoC
 
+const targetDir = `./${argv.d}_${argv.n}`
 const indexFileTemplate = `
 export const solvePart1 = (input: string) => {
   return 0
@@ -28,7 +44,7 @@ const exampleInput = \`
 
 \`.trim()
 
-testWrapper(\`Day ${day}\`, () => {
+testWrapper(\`Day ${argv.day}\`, () => {
   test("Part 1 - Example input", () => {
     expect(solvePart1(exampleInput)).toEqual(0)
   })
