@@ -1,0 +1,21 @@
+{
+  "name": "advent-of-code-2023",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "scaffoldDay": "bun ./scripts/scaffoldDay.ts",
+    "sd": "bun scaffoldDay"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.6",
+    "@types/yargs": "^17.0.24",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "figlet": "^1.6.0",
+    "yargs": "^17.7.2"
+  }
+}
