@@ -1,6 +1,7 @@
 import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
 import { mkdirSync, writeFileSync } from 'fs'
+import { getDayTemplate, getTestFileTemplate } from './templates'
 
 const argv = await yargs(hideBin(process.argv))
   .command(['scaffold', 'sd'], 'Scaffolds a new day')
@@ -24,44 +25,8 @@ const argv = await yargs(hideBin(process.argv))
 // @TODO trigger api call to get the input file from AoC
 
 const targetDir = `./${argv.d}_${argv.n}`
-const indexFileTemplate = `
-export const solvePart1 = (input: string) => {
-  return 0
-}
-
-export const solvePart2 = (input: string) => {
-  return 0
-}
-`.trim() + '\n'
-
-const testFileTemplate = `
-import { solvePart1, solvePart2 } from ".";
-import { expect, test } from 'bun:test'
-import { getFileInput, testWrapper } from "@/utils";
-
-const fileInput = getFileInput(import.meta.dir)
-const exampleInput = \`
-
-\`.trim()
-
-testWrapper(\`Day ${argv.day}\`, () => {
-  test("Part 1 - Example input", () => {
-    expect(solvePart1(exampleInput)).toEqual(0)
-  })
-  
-  test("Part 1 - File input", () => {
-    expect(solvePart1(fileInput)).toEqual(0)
-  })
-
-  test("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
-  })
-  
-  test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
-  })
-})
-`.trim() + '\n'
+const indexFileTemplate = getDayTemplate()
+const testFileTemplate = getTestFileTemplate(argv.d)
 
 mkdirSync(targetDir, { recursive: true })
 writeFileSync(`${targetDir}/index.ts`, indexFileTemplate)
