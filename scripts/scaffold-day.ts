@@ -8,7 +8,7 @@ const PAD_RIGHT_COLUMN_TABLE = 20
 
 const argv = await yargs(hideBin(process.argv))
   .command(['scaffold', 'sd'], 'Scaffolds a new day for advent of code, downlaods the puzzle input as well')
-  .example('bun sd -n find-stars -d 2', 'Creates a new directory named "2_find-stars" with the files "index.ts", "index.test.ts" and "input.txt". The last file containing the puzzle input downlaoded from AOC')
+  .example('bun sd -n find-stars -d 2', 'Creates a new directory named "02_find-stars" with the files "index.ts", "index.test.ts" and "input.txt". The last file containing the puzzle input downlaoded from AOC')
   
   .alias('n', 'name')
   .describe('n', 'The name of the challenge')
