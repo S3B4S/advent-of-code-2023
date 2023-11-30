@@ -20,11 +20,16 @@ const argv = await yargs(hideBin(process.argv))
   .nargs('d', 1)
   .default('d', new Date().getDate())
   
+  .alias('y', 'year')
+  .describe('y', 'The year of the challenge')
+  .nargs('y', 1)
+  .default('y', new Date().getFullYear())
+  
   .help('h')
   .alias('h', 'help')
   .argv
 
-const url = `https://adventofcode.com/2023/day/${argv.d}/input`
+const url = `https://adventofcode.com/${argv.y}/day/${argv.d}/input`
 console.log("Fetching puzzle input from: " + url)
 
 fetch(url, {
@@ -44,6 +49,9 @@ fetch(url, {
     ['For puzzle day', formatDay(argv.d)]
   ])
   
+  // @TODO check if directory already exists
+  // and if so, ask if it should be overwritten
+
   mkdirSync(targetDir, { recursive: true })
   writeFileSync(`${targetDir}/index.ts`, indexFileTemplate)
   writeFileSync(`${targetDir}/index.test.ts`, testFileTemplate)
