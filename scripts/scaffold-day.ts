@@ -13,7 +13,6 @@ const argv = await yargs(hideBin(process.argv))
   .alias('n', 'name')
   .describe('n', 'The name of the challenge')
   .nargs('n', 1)
-  .default('n', 'challenge')
   
   .alias('d', 'day')
   .describe('d', 'The day of the challenge')
@@ -29,23 +28,38 @@ const argv = await yargs(hideBin(process.argv))
   .alias('h', 'help')
   .argv
 
-const url = `https://adventofcode.com/${argv.y}/day/${argv.d}/input`
-console.log("Fetching puzzle input from: " + url)
+const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )(.|\n)*(?= ---<\/h2>)/g
 
-fetch(url, {
-  headers: {
-    cookie: `session=${process.env.AOC_SESSION_COOKIE}`,
-  },
-})
-.then(res => res.text())
-.then(inputData => {
-  const targetDir = `./${formatDay(argv.d)}_${argv.n}`
+const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
+const urlInput = `${urlSite}/input`
+
+console.log("Fetching puzzle title: " + urlSite)
+console.log("Fetching puzzle input from: " + urlInput)
+console.log("")
+
+Promise.all([
+  fetch(urlSite, {
+    headers: {
+      cookie: `session=${process.env.AOC_SESSION_COOKIE}`,
+    }
+  }),
+  fetch(urlInput, {
+    headers: {
+      cookie: `session=${process.env.AOC_SESSION_COOKIE}`,
+    },
+  })
+])
+.then(res => Promise.all(res.map(r => r.text())))
+.then(([siteData, inputData]) => {
+  const match = siteData.match(titleRegex)
+  const challengeTitle: string = (argv.n as string | undefined) || match?.[0].toLocaleLowerCase() || 'challenge'
+  const targetDir = `./${formatDay(argv.d)}_${challengeTitle}`
   const indexFileTemplate = getDayTemplate()
   const testFileTemplate = getTestFileTemplate(formatDay(argv.d))
 
   logTable([
     ['Creating directory', targetDir],
-    ['For puzzle name', argv.n],
+    ['For puzzle name', challengeTitle],
     ['For puzzle day', formatDay(argv.d)]
   ])
   
