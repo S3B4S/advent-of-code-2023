@@ -55,11 +55,6 @@ export const solvePart1 = (input: string) => input
   })
   .reduce((acc, curr) => acc + curr, 0)
 
-const logId = (yourDreamsAndHopes: any) => {
-  console.log(yourDreamsAndHopes)
-  return yourDreamsAndHopes
-}
-
 export const solvePart2 = (input: string) => {
   return input.split('\n').map(x => {
     trapCombinations.forEach(([trap, replacement]) => {

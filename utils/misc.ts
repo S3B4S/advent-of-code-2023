@@ -32,3 +32,19 @@ export const getDayOfDirectory = (dir: string) => dir.split('/').pop()?.split('_
  * @returns The contents of the file named `input.txt` in the directory
  */
 export const getFileInput = (dir: string) => readFileSync(dir + '/input.txt', { encoding: 'utf-8' })
+
+/**
+ * Wrap a value to log it and then return straight away.
+ * Useful in places like a chain or pipe.
+ * 
+ * Example:
+ * ```ts
+ * const result = logId(lines
+ *  .filter(x => x.includes('something'))) // Will log the filtered lines while keeping the chain going
+ *  .map(x => x.trim())
+ * ```
+ */
+export const logId = (yourDreamsAndHopes: any) => {
+  console.log(yourDreamsAndHopes)
+  return yourDreamsAndHopes
+}
