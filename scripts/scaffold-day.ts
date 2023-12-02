@@ -1,14 +1,22 @@
 import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
-import { mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { getDayTemplate, getTestFileTemplate } from './templates'
 
 const PAD_LEFT_COLUMN_TABLE = 20
 const PAD_RIGHT_COLUMN_TABLE = 20
 
 const argv = await yargs(hideBin(process.argv))
-  .command(['scaffold', 'sd'], 'Scaffolds a new day for advent of code, downlaods the puzzle input as well')
-  .example('bun sd -n find-stars -d 2', 'Creates a new directory named "02_find-stars" with the files "index.ts", "index.test.ts" and "input.txt". The last file containing the puzzle input downlaoded from AOC')
+  .command(['scaffold', 'sd'], 
+    `Scaffolds a new day for advent of code, downlaods the puzzle input as well
+  
+    - The name of the challenge is optional, if not provided it will be fetched from the AOC website
+    - The day is optional, if not provided it will default to the current day
+    - The year is optional, if not provided it will default to the current year
+    - The session cookie is required, it can be provided as an environment variable named AOC_SESSION_COOKIE, it can be found in the browser after logging in to AOC, it is named "session" and is a long string of characters
+    - If a directory with the same name as the target directory already exists, the script will prompt for confirmation before overwriting it
+  `)
+  .example('bun sd -n find-stars -d 2', 'Creates a new directory named "02_find-stars" with the files "index.ts", "index.test.ts" and "input.txt". The last file containing the puzzle input downlaoded from AOC.')
   
   .alias('n', 'name')
   .describe('n', 'The name of the challenge')
@@ -57,14 +65,22 @@ Promise.all([
   const indexFileTemplate = getDayTemplate()
   const testFileTemplate = getTestFileTemplate(formatDay(argv.d))
 
+  if (existsSync(targetDir)) {
+    const answer = prompt(`Directory ${targetDir} already exists, overwrite? [y/n]`)
+    
+    if (['y', 'yes'].includes(answer?.toLocaleLowerCase() || 'n')) {
+      console.log('Overwriting directory')
+    } else {
+      console.log('Aborting')
+      process.exit(0)
+    }
+  }
+
   logTable([
     ['Creating directory', targetDir],
     ['For puzzle name', challengeTitle],
     ['For puzzle day', formatDay(argv.d)]
   ])
-  
-  // @TODO check if directory already exists
-  // and if so, ask if it should be overwritten
 
   mkdirSync(targetDir, { recursive: true })
   writeFileSync(`${targetDir}/index.ts`, indexFileTemplate)
