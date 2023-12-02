@@ -36,6 +36,11 @@ const argv = await yargs(hideBin(process.argv))
   .alias('h', 'help')
   .argv
 
+if (!process.env.AOC_SESSION_COOKIE) {
+  console.error('AOC_SESSION_COOKIE environment variable is not set, please set it to your AOC session cookie. This is required to download the puzzle input.')
+  process.exit(1)
+}
+
 const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\!]*)(?= ---<\/h2>)/g
 
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
