@@ -11,7 +11,7 @@ export const solvePart2 = (input: string) => {
 export const getTestFileTemplate = (day: string) => `
 import { solvePart1, solvePart2 } from ".";
 import { expect, test } from 'bun:test'
-import { getFileInput, testWrapper } from "@/utils";
+import { getFileInput, testWrapper } from "@/utils/misc";
 
 const fileInput = getFileInput(import.meta.dir)
 const exampleInput = \`
