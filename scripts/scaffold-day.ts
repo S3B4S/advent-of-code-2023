@@ -36,7 +36,7 @@ const argv = await yargs(hideBin(process.argv))
   .alias('h', 'help')
   .argv
 
-const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )(.|\n)*(?= ---<\/h2>)/g
+const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\!]*)(?= ---<\/h2>)/g
 
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
 const urlInput = `${urlSite}/input`
@@ -65,6 +65,12 @@ Promise.all([
   const indexFileTemplate = getDayTemplate()
   const testFileTemplate = getTestFileTemplate(formatDay(argv.d))
 
+  logTable([
+    ['Target directory', targetDir],
+    ['For puzzle name', challengeTitle],
+    ['For puzzle day', formatDay(argv.d)]
+  ])
+  
   if (existsSync(targetDir)) {
     const answer = prompt(`Directory ${targetDir} already exists, overwrite? [y/n]`)
     
@@ -75,12 +81,6 @@ Promise.all([
       process.exit(0)
     }
   }
-
-  logTable([
-    ['Creating directory', targetDir],
-    ['For puzzle name', challengeTitle],
-    ['For puzzle day', formatDay(argv.d)]
-  ])
 
   mkdirSync(targetDir, { recursive: true })
   writeFileSync(`${targetDir}/index.ts`, indexFileTemplate)

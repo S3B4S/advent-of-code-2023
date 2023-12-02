@@ -3,6 +3,7 @@ import { expect, test } from 'bun:test'
 import { getFileInput, testWrapper } from "@/utils/misc";
 
 const fileInput = getFileInput(import.meta.dir)
+
 const exampleInput = `
 1abc2
 pqr3stu8vwx
