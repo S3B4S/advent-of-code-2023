@@ -41,7 +41,7 @@ if (!process.env.AOC_SESSION_COOKIE) {
   process.exit(1)
 }
 
-const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\!]*)(?= ---<\/h2>)/g
+const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\! ]*)(?= ---<\/h2>)/g
 
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
 const urlInput = `${urlSite}/input`
@@ -65,14 +65,15 @@ Promise.all([
 .then(res => Promise.all(res.map(r => r.text())))
 .then(([siteData, inputData]) => {
   const match = siteData.match(titleRegex)
-  const challengeTitle: string = (argv.n as string | undefined) || match?.[0].toLocaleLowerCase() || 'challenge'
-  const targetDir = `./${formatDay(argv.d)}_${challengeTitle}`
+  const challengeTitle: string = (argv.n as string | undefined) || match?.[0] || 'challenge'
+  const formattedChallengeTitle = challengeTitle.replaceAll(/[\?\!]/g, '').replaceAll(/ /g, '-').toLocaleLowerCase()
+  const targetDir = `./${formatDay(argv.d)}_${formattedChallengeTitle}`
   const indexFileTemplate = getDayTemplate()
   const testFileTemplate = getTestFileTemplate(formatDay(argv.d))
 
   logTable([
     ['Target directory', targetDir],
-    ['For puzzle name', challengeTitle],
+    ['For puzzle name', formattedChallengeTitle],
     ['For puzzle day', formatDay(argv.d)]
   ])
   
