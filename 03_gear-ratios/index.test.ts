@@ -22,14 +22,14 @@ testWrapper(`Day 03`, () => {
   })
   
   test("Part 1 - File input", () => {
-    expect(solvePart1(fileInput)).toEqual(0)
+    expect(solvePart1(fileInput)).toEqual(539637)
   })
 
   test("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+    expect(solvePart2(exampleInput)).toEqual(467835)
   })
   
   test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+    expect(solvePart2(fileInput)).toEqual(82818007)
   })
 })

@@ -82,7 +82,91 @@ export const solvePart1 = (input: string) => {
 }
 
 export const solvePart2 = (input: string) => {
-  return 0
+  const board = new Board(input)
+  let isBuildingSeqeuenceNumbers = -1
+
+  // Construct hashmap of nodes which link to each other
+  let hashMap = {} as Record<string, Node>
+  board.forEach((tile, coordinate) => {
+    const isNumber = tile.match(/\d+/g)
+
+    if (isNumber && isBuildingSeqeuenceNumbers === -1) {
+      isBuildingSeqeuenceNumbers = 0
+    } else if (isBuildingSeqeuenceNumbers >= 0) {
+      if (!isNumber) {
+        isBuildingSeqeuenceNumbers = -1
+      } else {
+        isBuildingSeqeuenceNumbers++
+      }
+    }
+
+    // If the x coordinate is 0, we went to a new line and we should
+    // start a new sequence 
+    if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x > 0) {
+      const node = new Node(tile)
+
+      // Exclude the head of the sequence
+      if (isBuildingSeqeuenceNumbers > 0) {
+        // console.log(hashMap)
+        // console.log(coordinate)
+        node.previous = hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})]
+        hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})].next = node
+      }
+      
+      hashMap[coordinateToString(coordinate)] = node
+    } else if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x === 0) {
+      const node = new Node(tile)
+      hashMap[coordinateToString(coordinate)] = node
+    }
+  })
+
+  // Now with the hashmap, iterate over the symbols and if we find a symbol, look for any
+  // adjacent linked lists and store the node of the head with the id of the head.
+
+  const sequences = {} as Record<string, string>
+  let totalGearRatio = 0
+
+  board.forEach((tile, coordinate) => {
+    const isSymbol = tile.match(/[^\d.]/g)
+    if (isSymbol) {
+      const adjacentCoordinates = board.adjacentCoordinates(coordinate)
+      const adjacentNodes = adjacentCoordinates
+        .map(c => hashMap[coordinateToString(c)])
+        .filter(n => !!n)
+      
+      let sequenceIds = [] as string[]
+
+      adjacentNodes.forEach(node => {
+        let currentNode = node
+        // console.log('----')
+        // console.log(currentNode.toString())
+        while (currentNode.previous) {
+          currentNode = currentNode.previous
+        }
+        // console.log(currentNode.toString())
+
+        if (!sequences[currentNode.id]) {
+          sequenceIds.push(currentNode.id)
+          let numberSeq = ''
+          let currentNode2 = currentNode
+          numberSeq += currentNode2.value
+          while (currentNode2.next) {
+            currentNode2 = currentNode2.next
+            numberSeq += currentNode2.value
+          }
+
+          sequences[currentNode.id] = numberSeq
+        }
+      })
+
+      if (sequenceIds.length > 1) {
+        const gearRatio = sequenceIds.map(id => sequences[id]).reduce((acc, curr) => acc * parseInt(curr), 1)
+        totalGearRatio += gearRatio
+      }
+    }
+  })
+
+  return totalGearRatio
 }
 
 class Node {
