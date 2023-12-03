@@ -1,13 +1,12 @@
+import { LinkedListNode } from "@/utils/list"
 import { Board, coordinateToString } from "@/utils/parsing"
-import { randomUUID } from "crypto"
-
 
 export const solvePart1 = (input: string) => {
   const board = new Board(input)
   let isBuildingSeqeuenceNumbers = -1
 
-  // Construct hashmap of nodes which link to each other
-  let hashMap = {} as Record<string, Node>
+  // Construct map of nodes which link to each other
+  let map = {} as Record<string, LinkedListNode>
   board.forEach((tile, coordinate) => {
     const isNumber = tile.match(/\d+/g)
 
@@ -24,24 +23,22 @@ export const solvePart1 = (input: string) => {
     // If the x coordinate is 0, we went to a new line and we should
     // start a new sequence 
     if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x > 0) {
-      const node = new Node(tile)
+      const node = new LinkedListNode(tile)
 
       // Exclude the head of the sequence
       if (isBuildingSeqeuenceNumbers > 0) {
-        // console.log(hashMap)
-        // console.log(coordinate)
-        node.previous = hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})]
-        hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})].next = node
+        node.previous = map[coordinateToString({y: coordinate.y, x: coordinate.x - 1})]
+        map[coordinateToString({y: coordinate.y, x: coordinate.x - 1})].next = node
       }
       
-      hashMap[coordinateToString(coordinate)] = node
+      map[coordinateToString(coordinate)] = node
     } else if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x === 0) {
-      const node = new Node(tile)
-      hashMap[coordinateToString(coordinate)] = node
+      const node = new LinkedListNode(tile)
+      map[coordinateToString(coordinate)] = node
     }
   })
 
-  // Now with the hashmap, iterate over the symbols and if we find a symbol, look for any
+  // Now with the map, iterate over the symbols and if we find a symbol, look for any
   // adjacent linked lists and store the node of the head with the id of the head.
 
   const sequences = {} as Record<string, string>
@@ -49,30 +46,21 @@ export const solvePart1 = (input: string) => {
   board.forEach((tile, coordinate) => {
     const isSymbol = tile.match(/[^\d.]/g)
     if (isSymbol) {
-      const adjacentCoordinates = board.adjacentCoordinates(coordinate)
-      const adjacentNodes = adjacentCoordinates
-        .map(c => hashMap[coordinateToString(c)])
+      const adjacentNodes = board.adjacentCoordinates(coordinate)
+        .map(c => map[coordinateToString(c)])
         .filter(n => !!n)
       
       adjacentNodes.forEach(node => {
-        let currentNode = node
-        // console.log('----')
-        // console.log(currentNode.toString())
-        while (currentNode.previous) {
-          currentNode = currentNode.previous
-        }
-        // console.log(currentNode.toString())
+        let head = node.getHead()
 
-        if (!sequences[currentNode.id]) {
+        if (!sequences[head.id]) {
           let numberSeq = ''
-          let currentNode2 = currentNode
-          numberSeq += currentNode2.value
-          while (currentNode2.next) {
-            currentNode2 = currentNode2.next
-            numberSeq += currentNode2.value
-          }
+          
+          head.iterateUntilTail(node => {
+            numberSeq += node.value
+          })
 
-          sequences[currentNode.id] = numberSeq
+          sequences[head.id] = numberSeq
         }
       })
     }
@@ -86,7 +74,7 @@ export const solvePart2 = (input: string) => {
   let isBuildingSeqeuenceNumbers = -1
 
   // Construct hashmap of nodes which link to each other
-  let hashMap = {} as Record<string, Node>
+  let map = {} as Record<string, LinkedListNode>
   board.forEach((tile, coordinate) => {
     const isNumber = tile.match(/\d+/g)
 
@@ -103,59 +91,45 @@ export const solvePart2 = (input: string) => {
     // If the x coordinate is 0, we went to a new line and we should
     // start a new sequence 
     if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x > 0) {
-      const node = new Node(tile)
+      const node = new LinkedListNode(tile)
 
       // Exclude the head of the sequence
       if (isBuildingSeqeuenceNumbers > 0) {
-        // console.log(hashMap)
-        // console.log(coordinate)
-        node.previous = hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})]
-        hashMap[coordinateToString({y: coordinate.y, x: coordinate.x - 1})].next = node
+        node.previous = map[coordinateToString({y: coordinate.y, x: coordinate.x - 1})]
+        map[coordinateToString({y: coordinate.y, x: coordinate.x - 1})].next = node
       }
       
-      hashMap[coordinateToString(coordinate)] = node
+      map[coordinateToString(coordinate)] = node
     } else if (isBuildingSeqeuenceNumbers >= 0 && coordinate.x === 0) {
-      const node = new Node(tile)
-      hashMap[coordinateToString(coordinate)] = node
+      const node = new LinkedListNode(tile)
+      map[coordinateToString(coordinate)] = node
     }
   })
 
-  // Now with the hashmap, iterate over the symbols and if we find a symbol, look for any
-  // adjacent linked lists and store the node of the head with the id of the head.
-
-  const sequences = {} as Record<string, string>
   let totalGearRatio = 0
 
   board.forEach((tile, coordinate) => {
     const isSymbol = tile.match(/[^\d.]/g)
     if (isSymbol) {
-      const adjacentCoordinates = board.adjacentCoordinates(coordinate)
-      const adjacentNodes = adjacentCoordinates
-        .map(c => hashMap[coordinateToString(c)])
+      const sequences = {} as Record<string, string>
+      const adjacentNodes = board.adjacentCoordinates(coordinate)
+        .map(c => map[coordinateToString(c)])
         .filter(n => !!n)
       
       let sequenceIds = [] as string[]
 
       adjacentNodes.forEach(node => {
-        let currentNode = node
-        // console.log('----')
-        // console.log(currentNode.toString())
-        while (currentNode.previous) {
-          currentNode = currentNode.previous
-        }
-        // console.log(currentNode.toString())
+        let head = node.getHead()
 
-        if (!sequences[currentNode.id]) {
-          sequenceIds.push(currentNode.id)
+        if (!sequences[head.id]) {
+          sequenceIds.push(head.id)
           let numberSeq = ''
-          let currentNode2 = currentNode
-          numberSeq += currentNode2.value
-          while (currentNode2.next) {
-            currentNode2 = currentNode2.next
-            numberSeq += currentNode2.value
-          }
 
-          sequences[currentNode.id] = numberSeq
+          head.iterateUntilTail(node => {
+            numberSeq += node.value
+          })
+
+          sequences[head.id] = numberSeq
         }
       })
 
@@ -167,54 +141,4 @@ export const solvePart2 = (input: string) => {
   })
 
   return totalGearRatio
-}
-
-class Node {
-  value: any
-  next: Node | null
-  previous: Node | null
-  id: string
-
-  constructor(value: any) {
-    this.value = value
-    this.next = null
-    this.previous = null
-    this.id = randomUUID()
-  }
-
-  toString() {
-    return `${this.value.toString()} | ${this.id.toString()} | ${this.previous?.value.toString()} | ${this.next?.value.toString()}`
-  }
-}
-
-class DoublyLinkedList {
-  head: Node | null
-  tail: Node | null
-  length: number
-  id: string
-
-  constructor() {
-    this.head = null
-    this.tail = null
-    this.length = 0
-    this.id = randomUUID()
-  }
-
-  push(value: any) {
-    const node = new Node(value)
-    if (!this.head) {
-      this.head = node
-      this.tail = node
-    } else if (!this.tail) {
-      this.tail = node
-      this.head.next = node
-      node.previous = this.head
-    } else {
-      this.tail.next = node
-      node.previous = this.tail
-      this.tail = node
-    }
-    this.length++
-    return this
-  }
 }
