@@ -33,7 +33,7 @@ export class LinkedListNode {
    * From the current node, iterate until the tail
    * Execute callback function for every node
    */
-  iterateUntilTail(fn: (node: LinkedListNode) => any) {
+  iterateUntilLast(fn: (node: LinkedListNode) => any) {
     let currentNode = this as LinkedListNode
     fn(currentNode)
     while (currentNode.next) {
@@ -49,13 +49,13 @@ export class LinkedListNode {
 
 export class DoublyLinkedList {
   head: LinkedListNode | null
-  tail: LinkedListNode | null
+  last: LinkedListNode | null
   length: number
   id: string
 
   constructor() {
     this.head = null
-    this.tail = null
+    this.last = null
     this.length = 0
     this.id = randomUUID()
   }
@@ -64,15 +64,15 @@ export class DoublyLinkedList {
     const node = new LinkedListNode(value)
     if (!this.head) {
       this.head = node
-      this.tail = node
-    } else if (!this.tail) {
-      this.tail = node
+      this.last = node
+    } else if (!this.last) {
+      this.last = node
       this.head.next = node
       node.previous = this.head
     } else {
-      this.tail.next = node
-      node.previous = this.tail
-      this.tail = node
+      this.last.next = node
+      node.previous = this.last
+      this.last = node
     }
     this.length++
     return this
