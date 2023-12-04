@@ -3,6 +3,7 @@ import { hideBin } from 'yargs/helpers'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { getDayTemplate, getTestFileTemplate } from './templates'
 import { getBorderCharacters, table } from 'table'
+import chalk from 'chalk'
 
 const logTable = (content: any) => {
   console.log(table(content, {
@@ -57,7 +58,6 @@ logTable([
   ["Fetching puzzle data from", urlSite],
   ["Fetching puzzle input from", urlInput]
 ])
-console.log("")
 
 Promise.all([
   fetch(urlSite, {
@@ -85,17 +85,16 @@ Promise.all([
     ['Target directory', targetDir],
     ['For puzzle name', formattedChallengeTitle],
     ['For puzzle day', formatDay(argv.d)],
-    ['Example input found', exampleInput ? 'Yes' : 'No'],
+    ['Example input found', exampleInput ? chalk.bgGreen(' Yes ') : chalk.bgRed(' No ')],
   ])
   
   if (existsSync(targetDir)) {
-    console.log('')
-    const answer = prompt(`Directory ${targetDir} already exists, overwrite? [y/n]`)
+    const answer = prompt(chalk.bold.yellow(`Directory ${targetDir} already exists, overwrite? [y/n]`))
     
     if (['y', 'yes'].includes(answer?.toLocaleLowerCase() || 'n')) {
-      console.log('Overwriting directory')
+      console.log(chalk.black('Overwriting directory'))
     } else {
-      console.log('Aborting')
+      console.log(chalk.red('Aborting'))
       process.exit(0)
     }
   }
