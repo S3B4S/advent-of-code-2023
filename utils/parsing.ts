@@ -1,4 +1,21 @@
 /**
+ * Parses a string of lines into an array of lines
+ * 
+ * For example:
+ * 541532
+ * 453215123
+ * 315321
+ * 5321523
+ * 53215113
+ * 
+ * Returns:
+ * ['541532', '453215123', '315321', '5321523', '53215113']
+ */
+export const parseInputLines = (input: string) => {
+  return input.trim().split('\n')
+}
+
+/**
  * Parses "blocks" of lines, where each block has a double newline between
  * 
  * For example:
