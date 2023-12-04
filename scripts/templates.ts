@@ -8,14 +8,14 @@ export const solvePart2 = (input: string) => {
 }
 `.trim() + '\n'
 
-export const getTestFileTemplate = (day: string) => `
+export const getTestFileTemplate = (day: string, exampleInput: string) => `
 import { solvePart1, solvePart2 } from ".";
 import { expect, test } from 'bun:test'
 import { getFileInput, testWrapper } from "@/utils/misc";
 
 const fileInput = getFileInput(import.meta.dir)
 const exampleInput = \`
-
+${exampleInput}
 \`.trim()
 
 testWrapper(\`Day ${day}\`, () => {

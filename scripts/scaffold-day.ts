@@ -3,8 +3,16 @@ import { hideBin } from 'yargs/helpers'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { getDayTemplate, getTestFileTemplate } from './templates'
 
-const PAD_LEFT_COLUMN_TABLE = 20
-const PAD_RIGHT_COLUMN_TABLE = 20
+const logTable = (rows: [string, string][]) => {
+  rows.forEach(([left, right]) => {
+    console.log(left.padEnd(PAD_LEFT_COLUMN_TABLE, ' '), right.padEnd(PAD_RIGHT_COLUMN_TABLE, ' '))
+  })
+}
+
+const formatDay = (day: number) => String(day).padStart(2, '0')
+
+const PAD_LEFT_COLUMN_TABLE = 30
+const PAD_RIGHT_COLUMN_TABLE = 30
 
 const argv = await yargs(hideBin(process.argv))
   .command(['scaffold', 'sd'], 
@@ -42,12 +50,15 @@ if (!process.env.AOC_SESSION_COOKIE) {
 }
 
 const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\! ]*)(?= ---<\/h2>)/g
+const exampleInputRegex = /(?<=<pre><code>)([\s\S]*?)(?=<\/code><\/pre>)/g
 
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
 const urlInput = `${urlSite}/input`
 
-console.log("Fetching puzzle title: " + urlSite)
-console.log("Fetching puzzle input from: " + urlInput)
+logTable([
+  ["Fetching puzzle title from:", urlSite],
+  ["Fetching puzzle input from:", urlInput]
+])
 console.log("")
 
 Promise.all([
@@ -64,20 +75,23 @@ Promise.all([
 ])
 .then(res => Promise.all(res.map(r => r.text())))
 .then(([siteData, inputData]) => {
-  const match = siteData.match(titleRegex)
-  const challengeTitle: string = (argv.n as string | undefined) || match?.[0] || 'challenge'
+  const exampleInput = siteData.match(exampleInputRegex)?.[0]
+  const challengeTitleMatch = siteData.match(titleRegex)
+  const challengeTitle = (argv.n as string | undefined) || challengeTitleMatch?.[0] || 'challenge'
   const formattedChallengeTitle = challengeTitle.replaceAll(/[\?\!]/g, '').replaceAll(/ /g, '-').toLocaleLowerCase()
   const targetDir = `./${formatDay(argv.d)}_${formattedChallengeTitle}`
   const indexFileTemplate = getDayTemplate()
-  const testFileTemplate = getTestFileTemplate(formatDay(argv.d))
+  const testFileTemplate = getTestFileTemplate(formatDay(argv.d), (exampleInput || '').trim())
 
   logTable([
     ['Target directory', targetDir],
     ['For puzzle name', formattedChallengeTitle],
-    ['For puzzle day', formatDay(argv.d)]
+    ['For puzzle day', formatDay(argv.d)],
+    ['Example input found', exampleInput ? 'Yes' : 'No'],
   ])
   
   if (existsSync(targetDir)) {
+    console.log('')
     const answer = prompt(`Directory ${targetDir} already exists, overwrite? [y/n]`)
     
     if (['y', 'yes'].includes(answer?.toLocaleLowerCase() || 'n')) {
@@ -93,11 +107,3 @@ Promise.all([
   writeFileSync(`${targetDir}/index.test.ts`, testFileTemplate)
   writeFileSync(`${targetDir}/input.txt`, inputData)
 })
-
-const formatDay = (day: number) => String(day).padStart(2, '0')
-
-const logTable = (rows: [string, string][]) => {
-  rows.forEach(([left, right]) => {
-    console.log(left.padEnd(PAD_LEFT_COLUMN_TABLE, ' '), right.padEnd(PAD_RIGHT_COLUMN_TABLE, ' '))
-  })
-}
