@@ -2,17 +2,15 @@ import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { getDayTemplate, getTestFileTemplate } from './templates'
+import { getBorderCharacters, table } from 'table'
 
-const logTable = (rows: [string, string][]) => {
-  rows.forEach(([left, right]) => {
-    console.log(left.padEnd(PAD_LEFT_COLUMN_TABLE, ' '), right.padEnd(PAD_RIGHT_COLUMN_TABLE, ' '))
-  })
+const logTable = (content: any) => {
+  console.log(table(content, {
+    border: getBorderCharacters('norc'),
+  }))
 }
 
 const formatDay = (day: number) => String(day).padStart(2, '0')
-
-const PAD_LEFT_COLUMN_TABLE = 30
-const PAD_RIGHT_COLUMN_TABLE = 30
 
 const argv = await yargs(hideBin(process.argv))
   .command(['scaffold', 'sd'], 
@@ -56,8 +54,8 @@ const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
 const urlInput = `${urlSite}/input`
 
 logTable([
-  ["Fetching puzzle title from:", urlSite],
-  ["Fetching puzzle input from:", urlInput]
+  ["Fetching puzzle data from", urlSite],
+  ["Fetching puzzle input from", urlInput]
 ])
 console.log("")
 
