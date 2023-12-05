@@ -44,6 +44,13 @@ const chunksOf2 = (arr: (number)[]) => {
   return result
 }
 
+// An Interval is indicated by a start and endpoint
+// [4, 8]: Interval, goes from point 4 to point 8, with length 5
+type Interval = [number, number]
+// A PointWithRange is indicated by a startpoint and a length
+// [4, 8]: PointWithRange, goes from point 4 to 11, with length 8
+type PointWithRange = [number, number]
+
 export const solvePart2 = (input: string) => {
   // const newInput = "seeds: " + logId(chunksOf2(input.split('\n')[0].split(':')[1].trim().split(' ')).map(pair => {
   //   const [rangeStart, rangeLength] = pair.map(Number)
@@ -63,9 +70,7 @@ export const solvePart2 = (input: string) => {
   // return solvePart1(newInputX)
 
   const [rawSeeds, ...maps] = parseInputBlocks(input)
-  const [seedToSoilMap, soilToFertMap, fertToWaterMap, waterToLightMap, lightToTempMap, tempToHumMap, humToLocationMap] = maps
   let seedRanges = chunksOf2(rawSeeds[0].split(':')[1].trim().split(' ').map(x => Number(x)))
-  // console.log(seedRanges)
 
   maps.forEach(map => {
     map.shift()
@@ -88,63 +93,61 @@ export const solvePart2 = (input: string) => {
           // console.log('||| Case 4 ')
           // Now the entire seedRange has been captured, so everything moves
           const delta = start - mapSourceRangeStart
-          const newRange = [delta + mapDestRangeStart, range] as [number, number]
-          seedsNewMap.push(newRange)
           
+          const newRange: Interval = [delta + mapDestRangeStart, range]
+          seedsNewMap.push(newRange)
           hasBeenTransformed[index] = true
         } else if (start < mapSourceRangeStart && mapSourceRangeStart <= end && end < mapSourceRangeEnd) {
           // console.log('||| Case 1 ')
           // To split at mapSourceRangeStart
           // start -> mapSourceRangeStart stays the same
           // mapSourceRangeStart -> end will move
-          const staysSame = [start, mapSourceRangeStart - 1] as [number, number]
-          const moves = [mapSourceRangeStart, end]
+          const staysSame: Interval = [start, mapSourceRangeStart - 1]
+          const moves: Interval = [mapSourceRangeStart, end]
 
-          const newRange = [mapDestRangeStart, moves[1] - moves[0] + 1] as [number, number]
+          const newRange = [mapDestRangeStart, getRangeOfInterval(moves)] as PointWithRange
           seedsNewMap.push(newRange)          
-          seedsNewMap.push([staysSame[0], staysSame[1] - staysSame[0] + 1])
-
+          seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
           hasBeenTransformed[index] = true
         } else if (mapSourceRangeStart < start && start <= mapSourceRangeEnd && mapSourceRangeEnd < end) {
           // console.log('||| Case 2 ')
           // start -> mapSourceRangeEnd stays the same
           // mapSourceRangeEnd -> end will be moved
-          const moves = [start, mapSourceRangeEnd]
-          const staysSame = [mapSourceRangeEnd + 1, end] as [number, number]
-
+          const moves: Interval = [start, mapSourceRangeEnd]
+          const staysSame: Interval = [mapSourceRangeEnd + 1, end]
           const delta = moves[0] - mapSourceRangeStart
-          const newRange = [mapDestRangeStart + delta, moves[1] - moves[0] + 1] as [number, number]
-
+          
+          const newRange = [mapDestRangeStart + delta, getRangeOfInterval(moves)] as PointWithRange
           seedsNewMap.push(newRange)
-          seedsNewMap.push([staysSame[0], staysSame[1] - staysSame[0] + 1])
+          seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
           hasBeenTransformed[index] = true
         } else if (mapSourceRangeEnd <= end && mapSourceRangeStart >= start) {
           // console.log('||| Case 3 ')
-          // Now it needs to split in 3 parts
+          // Now it might need to split in 3 parts
           // start -> mapSourceRangeStart stays the same
           // mapSourceRangeStart -> mapSourceRangeEnd will move
           // mapSourceRangeEnd -> end stays the same
-          const staysSame = [start, mapSourceRangeStart - 1] as [number, number]
-          const moves = [mapSourceRangeStart, mapSourceRangeEnd]
-          const staysSame2 = [mapSourceRangeEnd + 1, end] as [number, number]
+          const staysSame: Interval = [start, mapSourceRangeStart - 1]
+          const moves: Interval = [mapSourceRangeStart, mapSourceRangeEnd]
+          const staysSame2: Interval = [mapSourceRangeEnd + 1, end]
 
-          const diff = moves[0] - mapSourceRangeStart
-          const newRange = [mapDestRangeStart + diff, moves[1] - moves[0] + 1] as [number, number]
+          const newRange = [mapDestRangeStart, getRangeOfInterval(moves)] as PointWithRange
           seedsNewMap.push(newRange)
           hasBeenTransformed[index] = true
 
-          if (staysSame[1] - staysSame[0] + 1 !== 0)
-            seedsNewMap.push([staysSame[0], staysSame[1] - staysSame[0] + 1])
-          if (staysSame2[1] - staysSame2[0] + 1 !== 0)
-            seedsNewMap.push([staysSame2[0], staysSame2[1] - staysSame2[0] + 1])
+          if (getRangeOfInterval(staysSame) !== 0)
+            seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
+          if (getRangeOfInterval(staysSame2) !== 0)
+            seedsNewMap.push([staysSame2[0], getRangeOfInterval(staysSame2)])
 
         } else {
-          // The two intervals are entirely separate
           // console.log('||| Case 5 ')
-          // seedsNewMap.push(rangeSeed as [number, number])
+          // The two intervals are entirely separate
+          // So there's no moving needed
         }
       })
     })
+    
     // Anything that has not been moved should be pushed to the new map
     seedRanges.forEach((rangeSeed, index) => {
       if (!hasBeenTransformed[index]) {
@@ -156,3 +159,12 @@ export const solvePart2 = (input: string) => {
 
   return { seedRanges, minimum: seedRanges.reduce((acc, seed) => Math.min(acc, seed[0]), Infinity)}
 }
+
+/**
+ * Given a start and end point, get the range
+ * 
+ * Example: getRangeOfInterval([2, 5]) // -> 4
+ * @param start 
+ * @param end 
+ */
+const getRangeOfInterval = (interval: [number, number]) => interval[1] - interval[0] + 1
