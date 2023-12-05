@@ -69,10 +69,7 @@ export const solvePart2 = (input: string) => {
 
   maps.forEach(map => {
     map.shift()
-    // console.log(map)
-    // const isTransported = rangeOfSeeds.map(_ => false) // Keep track of seeds that have already been transported
     const seedsNewMap = [] as [number, number][]
-    // console.log('✅')
     // console.log('===NEW MAP==')
     // console.log(seedRanges)
     const hasBeenTransformed = seedRanges.map(_ => false)
@@ -80,8 +77,6 @@ export const solvePart2 = (input: string) => {
       // console.log('===NEW SET OF NUMBERS WITHIN MAP==')
       const [mapDestRangeStart, mapSourceRangeStart, mapRangeLength] = setOfNumbers.split(' ').map(Number)
       const mapSourceRangeEnd = mapSourceRangeStart + mapRangeLength - 1
-      const mapDestRangeEnd = mapDestRangeStart + mapRangeLength - 1
-      // console.log({ mapDest: [mapDestRangeStart, mapDestRangeEnd], mapSrc: [mapSourceRangeStart, mapSourceRangeEnd], mapRangeLength })
 
       seedRanges.forEach((rangeSeed, index) => {
         if (hasBeenTransformed[index]) return
@@ -90,7 +85,7 @@ export const solvePart2 = (input: string) => {
         const end = start + range - 1
 
         if (mapSourceRangeStart <= start && mapSourceRangeEnd >= end) {
-          // Case 4
+          // console.log('||| Case 4 ')
           // Now the entire seedRange has been captured, so everything moves
           const delta = start - mapSourceRangeStart
           const newRange = [delta + mapDestRangeStart, range] as [number, number]
@@ -161,53 +156,3 @@ export const solvePart2 = (input: string) => {
 
   return { seedRanges, minimum: seedRanges.reduce((acc, seed) => Math.min(acc, seed[0]), Infinity)}
 }
-
-const hasOverlapInRange = (range1: number[], range2: number[]) => {
-  const [range1Start, range1End] = range1
-  const [range2Start, range2End] = range2
-  return range1Start >= range2Start && range1Start <= range2End || range2Start >= range1Start && range2Start <= range1End || range1End >= range2Start && range1End <= range2End || range2End >= range1Start && range2End <= range1End
-}
-
-const overlapInRange = (range1: number[], range2: number[]) => {
-  const [range1Start, range1End] = range1
-  const [range2Start, range2End] = range2
-  if (range1Start >= range2Start && range1Start <= range2End) {
-    return [range1Start, Math.min(range1End, range2End)]
-  } else if (range2Start >= range1Start && range2Start <= range1End) {
-    return [range2Start, Math.min(range1End, range2End)]
-  } else if (range1End >= range2Start && range1End <= range2End) {
-    return [Math.max(range1Start, range2Start), range1End]
-  } else if (range2End >= range1Start && range2End <= range1End) {
-    return [Math.max(range1Start, range2Start), range2End]
-  } else {
-    return null
-  }
-}
-
-// ---
-// [ 74, 3 ] [ 45, 11 ]
-// ===NEW SET OF NUMBERS WITHIN MAP==
-// {
-//   mapDest: [ 81, 99 ],
-//   mapSrc: [ 45, 63 ],
-//   mapRangeLength: 19
-// }
-// ----
-// {
-//   start: 46,
-//   range: 4,
-//   end: 49
-// }
-// ||| Case 4 
-// 1
-// [ 82, 4 ]
-// ----
-// {
-//   start: 53,
-//   range: 10,
-//   end: 62
-// }
-// ||| Case 4 
-// 8
-// [ 89, 10 ]
-// ===NEW SET OF NUMBERS WITHIN MAP==
