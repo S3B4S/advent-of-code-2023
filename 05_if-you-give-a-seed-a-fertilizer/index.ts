@@ -167,4 +167,4 @@ export const solvePart2 = (input: string) => {
  * @param start 
  * @param end 
  */
-const getRangeOfInterval = (interval: [number, number]) => interval[1] - interval[0] + 1
+const getRangeOfInterval = (interval: Interval) => interval[1] - interval[0] + 1

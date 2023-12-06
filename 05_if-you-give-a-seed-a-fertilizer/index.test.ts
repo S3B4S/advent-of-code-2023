@@ -301,11 +301,45 @@ seed-to-soil map:
     expect(res.minimum).toEqual(50)
     expect(res.seedRanges.sort()).toStrictEqual([[50, 7], [9876, 4]].sort())
   })
+
+  test("Part 2 - Example input 2.1", () => {
+    const res = solvePart2(`
+seeds: 8 16 27 2 34 21
+
+seed-to-soil map:
+51 21 7
+2 42 21`.trim())
+    expect(res.minimum).toEqual(2)
+    expect(res.seedRanges.sort()).toStrictEqual([[8, 13], [51, 3], [57, 1], [28, 1], [34, 8], [2, 13]].sort())
+  })
+    
+  test("Part 2 - Example input 2.2", () => {
+    const res = solvePart2(`
+seeds: 8 16 27 2 34 21
+
+seed-to-soil map:
+51 21 7
+2 42 21
+
+soil-to-fertilizer map:
+5000 13 48`.trim())
+    expect(res.minimum).toEqual(2)
+    expect(res.seedRanges.sort()).toStrictEqual([
+      [8, 5],
+      [5000, 8],
+      [5038, 3],
+      [5044, 1],
+      [5015, 1],
+      [5021, 8],
+      [2, 11],
+      [5000, 2]
+    ].sort())
+  })
     
   test("Part 2 - File input", () => {
     expect(solvePart2(fileInput).minimum).toEqual(0)
   })
 })
 
-// 9357724
+// 9357724: not it.
 // 83479719: too high
