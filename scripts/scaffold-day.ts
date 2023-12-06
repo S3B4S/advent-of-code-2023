@@ -90,6 +90,11 @@ Promise.all([
     ['Example input found', exampleInput ? chalk.bgGreen(' Yes ') : chalk.bgRed(' No ')],
   ])
   
+  if (inputData.includes(errorMessage)) {
+    console.error(chalk.red('Puzzle input is not available, please check your session cookie, it\'s probably expired.'))
+    console.error(chalk.red('The files will still be created, but you will have to manually add the puzzle input or re-run the command after the cookie has been updated.'))
+  }
+  
   if (existsSync(targetDir)) {
     const answer = prompt(chalk.bold.yellow(`Directory ${targetDir} already exists, overwrite? [y/n]`))
     
