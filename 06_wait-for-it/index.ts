@@ -26,9 +26,12 @@ export const solvePart1 = (input: string) => {
  * @returns 
  */
 export const solvePart2 = (input: string) => {
+  const [timeLine, distanceLine] = parseInputLines(input)
+  const newTime = timeLine.split(":")[1].split(' ').filter(x => x !== "" && x !== " ").join('')
+  const newDistance = distanceLine.split(":")[1].split(' ').filter(x => x !== "" && x !== " ").join('')
   return solvePart1(`
-Time:        <manually-removed-kerning-time>
-Distance:   <manually-removed-kerning-distance>
+    Time: ${newTime}
+    Distance: ${newDistance}
   `.trim())
 }
 
