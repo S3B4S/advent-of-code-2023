@@ -54,6 +54,8 @@ const exampleInputRegex = /(?<=<pre><code>)([\s\S]*?)(?=<\/code><\/pre>)/g
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
 const urlInput = `${urlSite}/input`
 
+const errorMessage = "Puzzle inputs differ by user.  Please log in to get your puzzle input."
+
 logTable([
   ["Fetching puzzle data from", urlSite],
   ["Fetching puzzle input from", urlInput]
