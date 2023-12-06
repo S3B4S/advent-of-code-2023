@@ -18,8 +18,18 @@ export const solvePart1 = (input: string) => {
   return counts.reduce((a, b) => a * b, 1)
 }
 
+/**
+ * The actual input that was used to run the solution
+ * has been replaced with a placeholder. Since the AOC
+ * author wants us to avoid uploading our example inputs. :)
+ * @param input 
+ * @returns 
+ */
 export const solvePart2 = (input: string) => {
-  return 0
+  return solvePart1(`
+Time:        <manually-removed-kerning-time>
+Distance:   <manually-removed-kerning-distance>
+  `.trim())
 }
 
 const zip = (xs: any[], ys: any[]) => xs.map((x, i) => [x, ys[i]])
@@ -31,7 +41,6 @@ const zip = (xs: any[], ys: any[]) => xs.map((x, i) => [x, ys[i]])
  * @param totalTime 
  */
 const formula = (pressingTime: number, totalTime: number) => {
-  // console.log(pressingTime, totalTime)
   const movingSpeed = pressingTime
   const remainingTime = totalTime - pressingTime
   return movingSpeed * remainingTime
