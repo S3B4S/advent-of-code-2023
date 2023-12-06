@@ -337,9 +337,6 @@ soil-to-fertilizer map:
   })
     
   test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput).minimum).toEqual(0)
+    expect(solvePart2(fileInput).minimum).toEqual(81956384)
   })
 })
-
-// 9357724: not it.
-// 83479719: too high

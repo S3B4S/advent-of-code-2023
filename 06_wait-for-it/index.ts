@@ -18,13 +18,6 @@ export const solvePart1 = (input: string) => {
   return counts.reduce((a, b) => a * b, 1)
 }
 
-/**
- * The actual input that was used to run the solution
- * has been replaced with a placeholder. Since the AOC
- * author wants us to avoid uploading our example inputs. :)
- * @param input 
- * @returns 
- */
 export const solvePart2 = (input: string) => {
   const [timeLine, distanceLine] = parseInputLines(input)
   const newTime = timeLine.split(":")[1].split(' ').filter(x => x !== "" && x !== " ").join('')

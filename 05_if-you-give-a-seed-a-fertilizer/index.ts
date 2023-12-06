@@ -106,8 +106,9 @@ export const solvePart2 = (input: string) => {
           const moves: Interval = [mapSourceRangeStart, end]
 
           const newRange = [mapDestRangeStart, getRangeOfInterval(moves)] as PointWithRange
-          seedsNewMap.push(newRange)          
-          seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
+          seedsNewMap.push(newRange) 
+          seedRanges.push([staysSame[0], getRangeOfInterval(staysSame)])
+          hasBeenTransformed.push(false)
           hasBeenTransformed[index] = true
         } else if (mapSourceRangeStart < start && start <= mapSourceRangeEnd && mapSourceRangeEnd < end) {
           // console.log('||| Case 2 ')
@@ -119,7 +120,8 @@ export const solvePart2 = (input: string) => {
           
           const newRange = [mapDestRangeStart + delta, getRangeOfInterval(moves)] as PointWithRange
           seedsNewMap.push(newRange)
-          seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
+          seedRanges.push([staysSame[0], getRangeOfInterval(staysSame)])
+          hasBeenTransformed.push(false)
           hasBeenTransformed[index] = true
         } else if (mapSourceRangeEnd <= end && mapSourceRangeStart >= start) {
           // console.log('||| Case 3 ')
@@ -135,10 +137,14 @@ export const solvePart2 = (input: string) => {
           seedsNewMap.push(newRange)
           hasBeenTransformed[index] = true
 
-          if (getRangeOfInterval(staysSame) !== 0)
-            seedsNewMap.push([staysSame[0], getRangeOfInterval(staysSame)])
-          if (getRangeOfInterval(staysSame2) !== 0)
-            seedsNewMap.push([staysSame2[0], getRangeOfInterval(staysSame2)])
+          if (getRangeOfInterval(staysSame) !== 0) {
+            seedRanges.push([staysSame[0], getRangeOfInterval(staysSame)])
+            hasBeenTransformed.push(false)
+          }
+          if (getRangeOfInterval(staysSame2) !== 0) {
+            seedRanges.push([staysSame2[0], getRangeOfInterval(staysSame2)])
+            hasBeenTransformed.push(false)
+          }
 
         } else {
           // console.log('||| Case 5 ')
