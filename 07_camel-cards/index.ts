@@ -1,4 +1,5 @@
 import { parseInputLines } from "@/utils/parsing"
+import { P, match } from "ts-pattern"
 
 export enum Hand {
   "FiveOfAKind" = 6,
@@ -11,6 +12,8 @@ export enum Hand {
 }
 
 type Card = "A" | "K" | "Q" | "J" | "T" | "9" | "8" | "7" | "6" | "5" | "4" | "3" | "2"
+
+const includes = <T>(el: T) => (list: T[]) => list.includes(el)
 
 ////////////
 // Part 1 //
@@ -34,36 +37,28 @@ const valueOfCard: Record<Card, number> = {
 
 export const typeOfHand = (hand: string): Hand => {
   const cards = hand.trim().split('')
-  const count = cards.reduce((acc, curr) => {
+  const pairs = cards.reduce((acc, curr) => {
     return {
       ...acc,
       [curr]: (acc[curr] || 0) + 1
     }
   }, {} as Record<string, number>)
-  const pairs = Object.entries(count)
-  const amountDistinctCards = pairs.length
+  // This is an array which just holds the count of each type of card present
+  // Example: if the hand is "4455A", counts would be [2, 2, 1]
+  const counts = Object.values(pairs)
+  const nDistinctCards = counts.length
 
-  if (amountDistinctCards === 1) {
-    return Hand.FiveOfAKind
-  }
+  return match({ nDistinctCards, counts })
+    .with({ nDistinctCards: 1 }, () => Hand.FiveOfAKind)
+    
+    .with({ nDistinctCards: 2, counts: P.when(includes(4)) }, () => Hand.FourOfAKind)
+    .with({ nDistinctCards: 2 }, () => Hand.FullHouse)
 
-  if (amountDistinctCards === 2) {
-    if (pairs.some(pair => pair[1] === 4))
-      return Hand.FourOfAKind
-    return Hand.FullHouse
-  }
-
-  if (amountDistinctCards === 3) {
-    if (pairs.some(pair => pair[1] === 3))
-      return Hand.ThreeOfAKind
-    return Hand.TwoPair
-  }
-
-  if (amountDistinctCards === 4) {
-    return Hand.OnePair
-  }
-
-  return Hand.HighCard
+    .with({ nDistinctCards: 3, counts:  P.when(includes(3)) }, () => Hand.ThreeOfAKind)
+    .with({ nDistinctCards: 3 }, () => Hand.TwoPair)
+    
+    .with({ nDistinctCards: 4 }, () => Hand.OnePair)
+    .otherwise(() => Hand.HighCard)
 }
 
 export const solvePart1 = (input: string) => {
@@ -113,85 +108,38 @@ const valueOfCardWithJoker: Record<Card, number> = {
 
 export const typeOfHandWithJoker = (hand: string): Hand => {
   const cards = hand.trim().split('')
-  const count = cards.reduce((acc, curr) => {
+  const pairs = cards.reduce((acc, curr) => {
     return {
       ...acc,
       [curr]: (acc[curr] || 0) + 1
     }
   }, {} as Record<string, number>)
   // Remove the joker from the pairs
-  const { J: amountJokers, ...rest } = count
-  const pairs = Object.entries(rest)
-  const amountDistinctCards = pairs.length
-
-  if (amountJokers) {
-    // If a joker is present, we'll have to determine the best set possible
-    if (amountJokers === 5 || amountJokers === 4) {
-      return Hand.FiveOfAKind
-    }
-
-    if (amountJokers === 3) {
-      if (pairs.some(pair => pair[1] === 2))
-        return Hand.FiveOfAKind
-      return Hand.FourOfAKind
-    }
-
-    if (amountJokers === 2) {
-      // The three other cards are equal
-      if (pairs.some(pair => pair[1] === 3))
-        return Hand.FiveOfAKind
-      
-      // 2 other cards are equal
-      if (pairs.some(pair => pair[1] === 2))
-        return Hand.FourOfAKind
-      
-      // All the other 3 cards are distinct
-      return Hand.ThreeOfAKind
-    }
-
-    if (amountJokers === 1) {
-      if (amountDistinctCards === 1) // There's 4 of this one card
-        return Hand.FiveOfAKind
-
-      if (amountDistinctCards === 2) { // There could be 3, or 2 of this
-        if (pairs.some(pair => pair[1] === 3))
-          return Hand.FourOfAKind
-
-        // If we have 2 pairs of 2, we can create a full house
-        if (pairs.some(pair => pair[1] === 2))
-          return Hand.FullHouse
-      }
-
-      if (amountDistinctCards === 3)
-        return Hand.ThreeOfAKind
-
-      // If amountDistinctCards === 4
-      return Hand.OnePair
-    }
-  }
+  const { J: nJokers, ...rest } = pairs
+  // This is an array which just holds the count of each type of card present
+  // Example: if the hand is "4455A", counts would be [2, 2, 1]
+  const counts = Object.values(rest)
+  // The amount of distinct cards does *not* include the joker
+  const nDistinctCards = counts.length
   
-  // There are no jokers in this case
-  if (amountDistinctCards === 1) {
-    return Hand.FiveOfAKind
-  }
+  return match({ nJokers, nDistinctCards, counts })
+    .with({ nJokers: 5 }, () => Hand.FiveOfAKind)
+    .with({ nJokers: 4 }, () => Hand.FiveOfAKind)
+    
+    .with({ nJokers: 3, nDistinctCards: 1 }, () => Hand.FiveOfAKind)
+    .with({ nJokers: 3 }, () => Hand.FourOfAKind)
 
-  if (amountDistinctCards === 2) {
-    if (pairs.some(pair => pair[1] === 4))
-      return Hand.FourOfAKind
-    return Hand.FullHouse
-  }
+    .with({ nJokers: 2, nDistinctCards: 1 }, () => Hand.FiveOfAKind)
+    .with({ nJokers: 2, nDistinctCards: 2 }, () => Hand.FourOfAKind)
+    .with({ nJokers: 2, }, () => Hand.ThreeOfAKind)
 
-  if (amountDistinctCards === 3) {
-    if (pairs.some(pair => pair[1] === 3))
-      return Hand.ThreeOfAKind
-    return Hand.TwoPair
-  }
+    .with({ nJokers: 1, nDistinctCards: 1 }, () => Hand.FiveOfAKind)
+    .with({ nJokers: 1, nDistinctCards: 2, counts: P.when(includes(3)) }, () => Hand.FourOfAKind)
+    .with({ nJokers: 1, nDistinctCards: 2, counts: P.when(includes(2)) }, () => Hand.FullHouse)
+    .with({ nJokers: 1, nDistinctCards: 3 }, () => Hand.ThreeOfAKind)
+    .with({ nJokers: 1, nDistinctCards: 4 }, () => Hand.OnePair)
 
-  if (amountDistinctCards === 4) {
-    return Hand.OnePair
-  }
-
-  return Hand.HighCard
+    .otherwise(() => typeOfHand(hand))
 }
 
 export const solvePart2 = (input: string) => {
