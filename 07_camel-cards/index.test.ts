@@ -1,4 +1,4 @@
-import { Hand, solvePart1, solvePart2, typeOfHand } from ".";
+import { Hand, solvePart1, solvePart2, typeOfHand, typeOfHandWithJoker } from ".";
 import { expect, test } from 'bun:test'
 import { getFileInput, testWrapper } from "@/utils/misc";
 
@@ -88,11 +88,48 @@ QQQJA 483
     expect(solvePart1(fileInput)).toEqual(250254244)
   })
 
-  test.skip("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+  test("Part 2 - Joker - Five of a kind", () => {
+    expect(typeOfHandWithJoker("AAAAA")).toEqual(Hand.FiveOfAKind)
+    expect(typeOfHandWithJoker("AAAAJ")).toEqual(Hand.FiveOfAKind)
+    expect(typeOfHandWithJoker("AAAJJ")).toEqual(Hand.FiveOfAKind)
+    expect(typeOfHandWithJoker("AAJJJ")).toEqual(Hand.FiveOfAKind)
+    expect(typeOfHandWithJoker("AJJJJ")).toEqual(Hand.FiveOfAKind)
+    expect(typeOfHandWithJoker("JJJJJ")).toEqual(Hand.FiveOfAKind)
+  })
+
+  test("Part 2 - Joker - Four of a kind", () => {
+    expect(typeOfHandWithJoker("8888Q")).toEqual(Hand.FourOfAKind)
+    expect(typeOfHandWithJoker("J888Q")).toEqual(Hand.FourOfAKind)
+    expect(typeOfHandWithJoker("JJ88Q")).toEqual(Hand.FourOfAKind)
+    expect(typeOfHandWithJoker("JJJ8Q")).toEqual(Hand.FourOfAKind)
+    expect(typeOfHandWithJoker("QQJJ5")).toEqual(Hand.FourOfAKind)
+  })
+
+  test("Part 2 - Joker - Full house", () => {
+    expect(typeOfHandWithJoker("22233")).toEqual(Hand.FullHouse)
+    expect(typeOfHandWithJoker("J2233")).toEqual(Hand.FullHouse)
+  })
+
+  test("Part 2 - Joker - Three of a kind", () => {
+    expect(typeOfHandWithJoker("66613")).toEqual(Hand.ThreeOfAKind)
+    expect(typeOfHandWithJoker("66J13")).toEqual(Hand.ThreeOfAKind)
+    expect(typeOfHandWithJoker("6JJ13")).toEqual(Hand.ThreeOfAKind)
+    expect(typeOfHandWithJoker("QQJA5")).toEqual(Hand.ThreeOfAKind)
   })
   
-  test.skip("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+  test("Part 2 - Joker - Two pair", () => {
+    expect(typeOfHandWithJoker("66113")).toEqual(Hand.TwoPair)
+  })
+
+  test("Part 2 - Joker - One pair", () => {
+    expect(typeOfHandWithJoker("J1A4Q")).toEqual(Hand.OnePair)
+  })
+
+  test("Part 2 - Example input", () => {
+    expect(solvePart2(exampleInput)).toEqual(5905)
+  })
+  
+  test("Part 2 - File input", () => {
+    expect(solvePart2(fileInput)).toEqual(250087440)
   })
 })
