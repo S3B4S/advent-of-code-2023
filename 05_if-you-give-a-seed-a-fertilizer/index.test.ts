@@ -40,12 +40,12 @@ humidity-to-location map:
 `.trim()
 
 testWrapper(`Day 05`, () => {
-  test.skip("Part 1 - Example input", () => {
-    expect(solvePart1(exampleInput)).toEqual(0)
+  test("Part 1 - Example input", () => {
+    expect(solvePart1(exampleInput)).toEqual(35)
   })
   
-  test.skip("Part 1 - File input", () => {
-    expect(solvePart1(fileInput)).toEqual(0)
+  test("Part 1 - File input", () => {
+    expect(solvePart1(fileInput)).toEqual(218513636)
   })
 
   test("Part 2 - Example input 1", () => {
