@@ -1,4 +1,5 @@
 import { BinaryTree, Queue, RepeatingSequence, Stack } from "@/utils/adt"
+import { lcm } from "@/utils/math"
 import { parseInputBlocks } from "@/utils/parsing"
 
 export const solvePart1 = (input: string) => {
@@ -6,8 +7,7 @@ export const solvePart1 = (input: string) => {
   const repSeq = new RepeatingSequence(seq[0].trim().split(''))
   const allNodes = {} as Record<string, BinaryTree>
   edges.forEach(edge => {
-    const [parent, rawEdges] = edge.split(' = ')
-    const [_, left, right] = rawEdges.match(/\((\w{3})\, (\w{3})\)/)!
+    const [parent, left, right] = edge.split(/\W+/)
 
     if (!allNodes[parent]) {
       allNodes[parent] = new BinaryTree(parent)
@@ -30,11 +30,7 @@ export const solvePart1 = (input: string) => {
   let count = 0
   while (currentNode.value !== 'ZZZ') {
     count += 1
-    if (repSeq.next() === 'L') {
-      currentNode = currentNode.followEdge('left')!
-    } else {
-      currentNode = currentNode.followEdge('right')!
-    }
+    currentNode = currentNode.followEdge(repSeq.next() === 'L' ? 'left' : 'right')!
   }
 
   return count
@@ -46,8 +42,7 @@ export const solvePart2 = (input: string) => {
   const nodesA: Set<string> = new Set()
   const nodesZ: Set<string> = new Set()
   edges.forEach(edge => {
-    const [parent, rawEdges] = edge.split(' = ')
-    const [_, left, right] = rawEdges.match(/\((\w{3})\, (\w{3})\)/)!
+    const [parent, left, right] = edge.split(/\W+/)
 
     if (parent.endsWith('A')) {
       nodesA.add(parent)
@@ -70,13 +65,13 @@ export const solvePart2 = (input: string) => {
     }
 
     const node = allNodes[parent]
-    node.setEdge(allNodes[left], 'left')
-    node.setEdge(allNodes[right], 'right')
+    node.setLeft(allNodes[left])
+    node.setRight(allNodes[right])
   })
 
-  const numbers = [...nodesA].map(a => followSeqUntilZ(allNodes, seq[0].trim(), a))
+  const distances = [...nodesA].map(a => followSeqUntilZ(allNodes, seq[0].trim(), a))
 
-  return numbers.reduce(lcm)
+  return distances.reduce(lcm)
 }
 
 const followSeqUntilZ = (allNodes: Record<string, BinaryTree>, seq: string, node: string) => {
@@ -85,17 +80,8 @@ const followSeqUntilZ = (allNodes: Record<string, BinaryTree>, seq: string, node
   
   let count = 0
   while (!currentNode.value.endsWith('Z')) {
-    const step = repSeq.next()
     count++
-
-    if (step === 'L') {
-      currentNode = currentNode.followEdge('left')!
-    } else {
-      currentNode = currentNode.followEdge('right')!
-    }
+    currentNode = currentNode.followEdge(repSeq.next() === 'L' ? 'left' : 'right')!
   }
   return count
 }
-
-const gcd = (a: number, b: number): number => (b == 0 ? a : gcd(b, a % b))
-const lcm = (a: number, b: number): number => (a / gcd(a, b)) * b
