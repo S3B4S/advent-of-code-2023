@@ -23,6 +23,19 @@ BBB = (AAA, ZZZ)
 ZZZ = (ZZZ, ZZZ)
 `.trim()
 
+const exampleInputPart2 = `
+LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)
+`.trim()
+
 testWrapper(`Day 08`, () => {
   test("Part 1 - Example input", () => {
     expect(solvePart1(exampleInput)).toEqual(2)
@@ -33,14 +46,14 @@ testWrapper(`Day 08`, () => {
   })
   
   test("Part 1 - File input", () => {
-    expect(solvePart1(fileInput)).toEqual(0)
+    expect(solvePart1(fileInput)).toEqual(13301)
   })
 
-  test.skip("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+  test("Part 2 - Example input", () => {
+    expect(solvePart2(exampleInputPart2)).toEqual(6)
   })
   
-  test.skip("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+  test("Part 2 - File input", () => {
+    expect(solvePart2(fileInput)).toEqual(7309459565207)
   })
 })

@@ -1,4 +1,4 @@
-import { GraphNode, RepeatingSequence } from "@/utils/adt"
+import { GraphNode, Queue, RepeatingSequence, Stack } from "@/utils/adt"
 import { parseInputBlocks } from "@/utils/parsing"
 
 export const solvePart1 = (input: string) => {
@@ -41,5 +41,61 @@ export const solvePart1 = (input: string) => {
 }
 
 export const solvePart2 = (input: string) => {
-  return 0
+  const [seq, edges] = parseInputBlocks(input)
+  const allNodes = {} as Record<string, GraphNode>
+  const nodesA: Set<string> = new Set()
+  const nodesZ: Set<string> = new Set()
+  edges.forEach(edge => {
+    const [parent, rawEdges] = edge.split(' = ')
+    const [_, left, right] = rawEdges.match(/\((\w{3})\, (\w{3})\)/)!
+
+    if (parent.endsWith('A')) {
+      nodesA.add(parent)
+    }
+
+    if (parent.endsWith('Z')) {
+      nodesZ.add(parent)
+    }
+    
+    if (!allNodes[parent]) {
+      allNodes[parent] = new GraphNode(parent)
+    }
+
+    if (!allNodes[left]) {
+      allNodes[left] = new GraphNode(left)
+    }
+
+    if (!allNodes[right]) {
+      allNodes[right] = new GraphNode(right)
+    }
+
+    const node = allNodes[parent]
+    node.addEdge(allNodes[left], 'left')
+    node.addEdge(allNodes[right], 'right')
+  })
+
+  const numbers = [...nodesA].map(a => followSeqUntilZ(allNodes, seq[0].trim(), a))
+
+  return numbers.reduce(lcm)
 }
+
+const followSeqUntilZ = (allNodes: Record<string, GraphNode>, seq: string, node: string) => {
+  let currentNode = allNodes[node]
+  const repSeq = new RepeatingSequence(seq.split(''))
+  
+  let count = 0
+  while (!currentNode.value.endsWith('Z')) {
+    const step = repSeq.next()
+    count++
+
+    if (step === 'L') {
+      currentNode = currentNode.followEdge('left')!
+    } else {
+      currentNode = currentNode.followEdge('right')!
+    }
+  }
+  return count
+}
+
+const gcd = (a: number, b: number): number => (b == 0 ? a : gcd(b, a % b))
+const lcm = (a: number, b: number): number => (a / gcd(a, b)) * b

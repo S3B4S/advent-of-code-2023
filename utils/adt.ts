@@ -24,10 +24,10 @@ export class Stack {
   }
 }
 
-export class Queue {
-  private _store: any[] = [];
+export class Queue<T> {
+  private _store: T[] = [];
   constructor() {}
-  enqueue(item: any) {
+  enqueue(item: T) {
     this._store.push(item);
   }
   dequeue() {
@@ -85,7 +85,7 @@ export class RepeatingSequence {
   constructor(input: any[]) {
     this._store = input;
   }
-  
+
   next() {
     if (this._index === this._store.length) {
       this._index = 0;

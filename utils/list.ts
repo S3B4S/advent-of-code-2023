@@ -78,3 +78,11 @@ export class DoublyLinkedList {
     return this
   }
 }
+
+export const chunksOfN = (n: number) => (list: any[]) => {
+  const chunks = []
+  for (let i = 0; i < list.length; i += n) {
+    chunks.push(list.slice(i, i + n))
+  }
+  return chunks
+}
