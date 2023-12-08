@@ -31,7 +31,7 @@ export const solvePart1 = (input: string) => {
     return []
   })
 
-  return ids.reduce((acc, curr) => acc + curr, 0)
+  return ids.reduce((acc, curr) => acc + curr)
 }
 
 export const solvePart2 = (input: string) => {
@@ -59,5 +59,5 @@ export const solvePart2 = (input: string) => {
     return maxRed * maxGreen * maxBlue
   })
 
-  return powers.reduce((acc, curr) => acc + curr, 0)
+  return powers.reduce((acc, curr) => acc + curr)
 }

@@ -32,5 +32,5 @@ export const solvePart2 = (input: string) => {
     }
   })
 
-  return amount.filter(x => !isNaN(x)).reduce((acc, curr) => acc + curr, 0)
+  return amount.filter(x => !isNaN(x)).reduce((acc, curr) => acc + curr)
 }

@@ -53,16 +53,19 @@ export const solvePart1 = (input: string) => input
     const last = numbers[numbers.length - 1]
     return Number(first + last)
   })
-  .reduce((acc, curr) => acc + curr, 0)
+  .reduce((acc, curr) => acc + curr)
 
 export const solvePart2 = (input: string) => {
-  return input.split('\n').map(x => {
+  return input
+  .split('\n').map(x => {
     trapCombinations.forEach(([trap, replacement]) => {
       x = x.replace(trap, replacement)
     })
     return x.trim()
-  }).map(str => str.match(regex)).map(subList => {
-    if (!subList) return 0 // This will not happen but we want to assert for TS
+  })
+  .map(str => {
+    if (!str) return 0 // This will not happen but we want to assert for TS
+    const subList = str.match(regex)!
   
     let first = subList[0] as ElementOfReadOnlyArray<typeof listNumbers>
     let last = subList[subList.length - 1] as ElementOfReadOnlyArray<typeof listNumbers>
@@ -78,6 +81,7 @@ export const solvePart2 = (input: string) => {
       last = mappingNumbers[last]
     }
 
-    return first + last
-  }).reduce((acc, curr) => acc + Number(curr), 0 as number /* Not sure why I need to do this... */)
+    return Number(first + last)
+  })
+  .reduce((acc, curr) => acc + Number(curr))
 }

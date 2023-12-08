@@ -15,7 +15,7 @@ export const solvePart1 = (input: string) => {
     }
     return count
   })
-  return counts.reduce((a, b) => a * b, 1)
+  return counts.reduce((a, b) => a * b)
 }
 
 export const solvePart2 = (input: string) => {

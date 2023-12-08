@@ -24,7 +24,7 @@ export const solvePart1 = (input: string) => {
     })
   })
 
-  return seeds.reduce((acc, seed) => Math.min(acc, seed), Infinity)
+  return seeds.reduce((acc, seed) => Math.min(acc, seed))
 }
 
 const chunksOf2 = (arr: (number)[]) => {
