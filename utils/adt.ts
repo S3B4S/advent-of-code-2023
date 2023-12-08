@@ -50,12 +50,12 @@ export class Queue<T> {
   }
 }
 
-export class BinaryGraphNode {
+export class BinaryTree {
   public value: any;
-  public left?: BinaryGraphNode;
-  public right?: BinaryGraphNode;
+  public left?: BinaryTree;
+  public right?: BinaryTree;
   
-  constructor(value: any, left?: BinaryGraphNode, right?: BinaryGraphNode) {
+  constructor(value: any, left?: BinaryTree, right?: BinaryTree) {
     this.value = value;
     this.left = left
     this.right = right
@@ -69,15 +69,15 @@ export class BinaryGraphNode {
     return this.right;
   }
 
-  setLeft(node: BinaryGraphNode) {
+  setLeft(node: BinaryTree) {
     this.left = node;
   }
 
-  setRight(node: BinaryGraphNode) {
+  setRight(node: BinaryTree) {
     this.right = node;
   }
-  
-  setEdge(node: BinaryGraphNode, direction: "left" | "right") {
+
+  setEdge(node: BinaryTree, direction: "left" | "right") {
     this[direction] = node;
   }
 

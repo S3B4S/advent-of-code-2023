@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { Stack, Queue, RepeatingSequence, BinaryGraphNode } from './adt'
+import { Stack, Queue, RepeatingSequence, BinaryTree } from './adt'
 
 test('Stack - Push 1', () => {
   const stack = new Stack()
@@ -72,10 +72,10 @@ test("Repeating sequence", () => {
 })
 
 test("Binary tree - Attach children after root construct 1", () => {
-  const root = new BinaryGraphNode('root')
+  const root = new BinaryTree('root')
 
-  const left = new BinaryGraphNode('left')
-  const right = new BinaryGraphNode('right')
+  const left = new BinaryTree('left')
+  const right = new BinaryTree('right')
 
   expect(root.getLeft()).toBeUndefined()
   expect(root.getRight()).toBeUndefined()
@@ -88,10 +88,10 @@ test("Binary tree - Attach children after root construct 1", () => {
 })
 
 test("Binary tree - Attach children after root construct 2", () => {
-  const root = new BinaryGraphNode('root')
+  const root = new BinaryTree('root')
 
-  const left = new BinaryGraphNode('left')
-  const right = new BinaryGraphNode('right')
+  const left = new BinaryTree('left')
+  const right = new BinaryTree('right')
 
   expect(root.getLeft()).toBeUndefined()
   expect(root.getRight()).toBeUndefined()
@@ -104,17 +104,17 @@ test("Binary tree - Attach children after root construct 2", () => {
 })
 
 test("Binary tree - Initialise in constructor", () => {
-  const left = new BinaryGraphNode('left')
-  const right = new BinaryGraphNode('right')
+  const left = new BinaryTree('left')
+  const right = new BinaryTree('right')
 
-  const root = new BinaryGraphNode('root', left, right)
+  const root = new BinaryTree('root', left, right)
 
   expect(root.left).toEqual(left)
   expect(root.right).toEqual(right)
 })
 
 test("Binary tree - Root without children", () => {
-  const root = new BinaryGraphNode('root')
+  const root = new BinaryTree('root')
 
   expect(root.left).toBeUndefined()
   expect(root.right).toBeUndefined()
