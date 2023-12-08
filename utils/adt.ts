@@ -50,31 +50,47 @@ export class Queue<T> {
   }
 }
 
-type Edges = Record<"left" | "right", GraphNode> 
-
-export class GraphNode {
+export class BinaryGraphNode {
   public value: any;
-  public edges: Edges;
+  public left?: BinaryGraphNode;
+  public right?: BinaryGraphNode;
   
-  constructor(value: any) {
+  constructor(value: any, left?: BinaryGraphNode, right?: BinaryGraphNode) {
     this.value = value;
-    this.edges = {} as Edges
+    this.left = left
+    this.right = right
   }
 
-  addEdge(node: GraphNode, direction: "left" | "right") {
-    this.edges[direction] = node;
+  getLeft() {
+    return this.left;
+  }
+
+  getRight() {
+    return this.right;
+  }
+
+  setLeft(node: BinaryGraphNode) {
+    this.left = node;
+  }
+
+  setRight(node: BinaryGraphNode) {
+    this.right = node;
+  }
+  
+  setEdge(node: BinaryGraphNode, direction: "left" | "right") {
+    this[direction] = node;
   }
 
   hasEdge(direction: "left" | "right") {
-    return !!this.edges[direction];
+    return !!this[direction];
   }
 
   hasEdges() {
-    return Object.keys(this.edges).length > 0;
+    return Boolean(this.left || this.right)
   }
 
   followEdge(direction: "left" | "right") {
-    return this.edges[direction];
+    return this[direction];
   }
 }
 

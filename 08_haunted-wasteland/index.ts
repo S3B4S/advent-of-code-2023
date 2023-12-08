@@ -1,29 +1,29 @@
-import { GraphNode, Queue, RepeatingSequence, Stack } from "@/utils/adt"
+import { BinaryGraphNode, Queue, RepeatingSequence, Stack } from "@/utils/adt"
 import { parseInputBlocks } from "@/utils/parsing"
 
 export const solvePart1 = (input: string) => {
   const [seq, edges] = parseInputBlocks(input)
   const repSeq = new RepeatingSequence(seq[0].trim().split(''))
-  const allNodes = {} as Record<string, GraphNode>
+  const allNodes = {} as Record<string, BinaryGraphNode>
   edges.forEach(edge => {
     const [parent, rawEdges] = edge.split(' = ')
     const [_, left, right] = rawEdges.match(/\((\w{3})\, (\w{3})\)/)!
 
     if (!allNodes[parent]) {
-      allNodes[parent] = new GraphNode(parent)
+      allNodes[parent] = new BinaryGraphNode(parent)
     }
 
     if (!allNodes[left]) {
-      allNodes[left] = new GraphNode(left)
+      allNodes[left] = new BinaryGraphNode(left)
     }
 
     if (!allNodes[right]) {
-      allNodes[right] = new GraphNode(right)
+      allNodes[right] = new BinaryGraphNode(right)
     }
 
     const node = allNodes[parent]
-    node.addEdge(allNodes[left], 'left')
-    node.addEdge(allNodes[right], 'right')
+    node.setEdge(allNodes[left], 'left')
+    node.setEdge(allNodes[right], 'right')
   })
 
   let currentNode = allNodes['AAA']
@@ -42,7 +42,7 @@ export const solvePart1 = (input: string) => {
 
 export const solvePart2 = (input: string) => {
   const [seq, edges] = parseInputBlocks(input)
-  const allNodes = {} as Record<string, GraphNode>
+  const allNodes = {} as Record<string, BinaryGraphNode>
   const nodesA: Set<string> = new Set()
   const nodesZ: Set<string> = new Set()
   edges.forEach(edge => {
@@ -58,20 +58,20 @@ export const solvePart2 = (input: string) => {
     }
     
     if (!allNodes[parent]) {
-      allNodes[parent] = new GraphNode(parent)
+      allNodes[parent] = new BinaryGraphNode(parent)
     }
 
     if (!allNodes[left]) {
-      allNodes[left] = new GraphNode(left)
+      allNodes[left] = new BinaryGraphNode(left)
     }
 
     if (!allNodes[right]) {
-      allNodes[right] = new GraphNode(right)
+      allNodes[right] = new BinaryGraphNode(right)
     }
 
     const node = allNodes[parent]
-    node.addEdge(allNodes[left], 'left')
-    node.addEdge(allNodes[right], 'right')
+    node.setEdge(allNodes[left], 'left')
+    node.setEdge(allNodes[right], 'right')
   })
 
   const numbers = [...nodesA].map(a => followSeqUntilZ(allNodes, seq[0].trim(), a))
@@ -79,7 +79,7 @@ export const solvePart2 = (input: string) => {
   return numbers.reduce(lcm)
 }
 
-const followSeqUntilZ = (allNodes: Record<string, GraphNode>, seq: string, node: string) => {
+const followSeqUntilZ = (allNodes: Record<string, BinaryGraphNode>, seq: string, node: string) => {
   let currentNode = allNodes[node]
   const repSeq = new RepeatingSequence(seq.split(''))
   

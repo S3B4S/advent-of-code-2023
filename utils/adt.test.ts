@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { Stack, Queue } from './adt'
+import { Stack, Queue, RepeatingSequence, BinaryGraphNode } from './adt'
 
 test('Stack - Push 1', () => {
   const stack = new Stack()
@@ -58,4 +58,64 @@ test("Queue - Enqueue multiple", () => {
   expect(queue.size()).toEqual(1)
   expect(queue.dequeue()).toEqual(3)
   expect(queue.size()).toEqual(0)
+})
+
+test("Repeating sequence", () => {
+  const repSeq = new RepeatingSequence(['A', 'B', 'C'])
+  expect(repSeq.next()).toEqual('A')
+  expect(repSeq.next()).toEqual('B')
+  expect(repSeq.next()).toEqual('C')
+  expect(repSeq.next()).toEqual('A')
+  expect(repSeq.next()).toEqual('B')
+  expect(repSeq.next()).toEqual('C')
+  expect(repSeq.next()).toEqual('A')
+})
+
+test("Binary tree - Attach children after root construct 1", () => {
+  const root = new BinaryGraphNode('root')
+
+  const left = new BinaryGraphNode('left')
+  const right = new BinaryGraphNode('right')
+
+  expect(root.getLeft()).toBeUndefined()
+  expect(root.getRight()).toBeUndefined()
+
+  root.setEdge(left, 'left')
+  root.setEdge(right, 'right')
+
+  expect(root.left).toEqual(left)
+  expect(root.right).toEqual(right)
+})
+
+test("Binary tree - Attach children after root construct 2", () => {
+  const root = new BinaryGraphNode('root')
+
+  const left = new BinaryGraphNode('left')
+  const right = new BinaryGraphNode('right')
+
+  expect(root.getLeft()).toBeUndefined()
+  expect(root.getRight()).toBeUndefined()
+
+  root.setLeft(left)
+  root.setRight(right)
+
+  expect(root.left).toEqual(left)
+  expect(root.right).toEqual(right)
+})
+
+test("Binary tree - Initialise in constructor", () => {
+  const left = new BinaryGraphNode('left')
+  const right = new BinaryGraphNode('right')
+
+  const root = new BinaryGraphNode('root', left, right)
+
+  expect(root.left).toEqual(left)
+  expect(root.right).toEqual(right)
+})
+
+test("Binary tree - Root without children", () => {
+  const root = new BinaryGraphNode('root')
+
+  expect(root.left).toBeUndefined()
+  expect(root.right).toBeUndefined()
 })
