@@ -49,3 +49,49 @@ export class Queue {
     console.log(this._store);
   }
 }
+
+type Edges = Record<"left" | "right", GraphNode> 
+
+export class GraphNode {
+  public value: any;
+  public edges: Edges;
+  
+  constructor(value: any) {
+    this.value = value;
+    this.edges = {} as Edges
+  }
+
+  addEdge(node: GraphNode, direction: "left" | "right") {
+    this.edges[direction] = node;
+  }
+
+  hasEdge(direction: "left" | "right") {
+    return !!this.edges[direction];
+  }
+
+  hasEdges() {
+    return Object.keys(this.edges).length > 0;
+  }
+
+  followEdge(direction: "left" | "right") {
+    return this.edges[direction];
+  }
+}
+
+export class RepeatingSequence {
+  private _store: any[] = [];
+  private _index: number = 0;
+  
+  constructor(input: any[]) {
+    this._store = input;
+  }
+  
+  next() {
+    if (this._index === this._store.length) {
+      this._index = 0;
+    }
+    const value = this._store[this._index];
+    this._index++;
+    return value;
+  }
+}
