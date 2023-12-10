@@ -52,7 +52,7 @@ export class LinkedListNode<T> {
   }
 
   toString() {
-    return `Value: ${JSON.stringify(this.value)} | Id: ${this.id.toString()} | Previous: ${this.previous?.value.toString()} | Next: ${this.next?.value.toString()}`
+    return `Value: ${JSON.stringify(this.value)} | Id: ${this.id.toString()} | Previous: ${this.previous?.value?.toString()} | Next: ${this.next?.value?.toString()}`
   }
 
   printPath() {

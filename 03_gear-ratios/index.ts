@@ -4,11 +4,11 @@ import { Board, coordinateToString } from "@/utils/parsing"
 enum BuildingSequenceStatus { NotBuilding, Head, Tail }
 
 export const solvePart1 = (input: string) => {
-  const board = new Board(input)
+  const board = new Board<string>(input)
   let isBuildingSeqeuenceNumbers = BuildingSequenceStatus.NotBuilding
 
   // Construct map of nodes which link to each other
-  let map = {} as Record<string, LinkedListNode>
+  let map = {} as Record<string, LinkedListNode<string>>
   board.forEach((tile, coordinate) => {
     const isNumber = tile.match(/\d+/g)
 
@@ -24,7 +24,7 @@ export const solvePart1 = (input: string) => {
     }
 
     if (isBuildingSeqeuenceNumbers !== BuildingSequenceStatus.NotBuilding && coordinate.x > 0) {
-      const node = new LinkedListNode(tile)
+      const node = new LinkedListNode<string>(tile)
 
       // Exclude the head of the sequence
       if (isBuildingSeqeuenceNumbers === BuildingSequenceStatus.Tail) {
@@ -36,7 +36,7 @@ export const solvePart1 = (input: string) => {
     } else if (isBuildingSeqeuenceNumbers !== BuildingSequenceStatus.NotBuilding && coordinate.x === 0) {
       // If the x coordinate is 0, we went to a new line and we should
       // start a new sequence 
-      const node = new LinkedListNode(tile)
+      const node = new LinkedListNode<string>(tile)
       map[coordinateToString(coordinate)] = node
     }
   })
@@ -73,11 +73,11 @@ export const solvePart1 = (input: string) => {
 }
 
 export const solvePart2 = (input: string) => {
-  const board = new Board(input)
+  const board = new Board<string>(input)
   let isBuildingSeqeuenceNumbers = BuildingSequenceStatus.NotBuilding
 
   // Construct hashmap of nodes which link to each other
-  let map = {} as Record<string, LinkedListNode>
+  let map = {} as Record<string, LinkedListNode<string>>
   board.forEach((tile, coordinate) => {
     const isNumber = tile.match(/\d+/g)
 
@@ -95,7 +95,7 @@ export const solvePart2 = (input: string) => {
     // If the x coordinate is 0, we went to a new line and we should
     // start a new sequence 
     if (isBuildingSeqeuenceNumbers !== BuildingSequenceStatus.NotBuilding && coordinate.x > 0) {
-      const node = new LinkedListNode(tile)
+      const node = new LinkedListNode<string>(tile)
 
       // Exclude the head of the sequence
       if (isBuildingSeqeuenceNumbers === BuildingSequenceStatus.Tail) {
@@ -105,7 +105,7 @@ export const solvePart2 = (input: string) => {
       
       map[coordinateToString(coordinate)] = node
     } else if (isBuildingSeqeuenceNumbers !== BuildingSequenceStatus.NotBuilding && coordinate.x === 0) {
-      const node = new LinkedListNode(tile)
+      const node = new LinkedListNode<string>(tile)
       map[coordinateToString(coordinate)] = node
     }
   })
