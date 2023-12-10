@@ -71,6 +71,15 @@ export const relativeCoordinates: Record<Direction, CoordinateRecord> = {
   [Direction.West]: { y: 0, x: -1 },
 }
 
+export const relativeDirection = (from: CoordinateRecord, to: CoordinateRecord): Direction | undefined => {
+  const relativeCoordinate = {
+    y: to.y - from.y,
+    x: to.x - from.x,
+  }
+
+  return Object.entries(relativeCoordinates).find(([, coord]) => coord.y === relativeCoordinate.y && coord.x === relativeCoordinate.x)?.[0] as Direction | undefined
+}
+
 export const addCoordinate = (base: CoordinateRecord, toAdd: CoordinateRecord) => ({
   y: base.y + toAdd.y,
   x: base.x + toAdd.x,
@@ -130,6 +139,12 @@ export class Board {
 
   forEach(fn: (tile: string, coordinate: CoordinateRecord) => any) {
     return this.content.forEach((row, rowI) => row.forEach((tile, colI) => fn(tile, { y: rowI, x: colI })))
+  }
+
+  find(tile: string): CoordinateRecord {
+    const y = this.content.findIndex(row => row.includes(tile))
+    const x = this.content[y].indexOf(tile)
+    return { x, y }
   }
 
   adjacentCoordinates(coord: CoordinateRecord, limitedTo?: Direction[]) {

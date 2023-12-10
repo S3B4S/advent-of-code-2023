@@ -42,10 +42,27 @@ export class LinkedListNode {
     }
   }
 
-  toString() {
-    return `Value: ${this.value.toString()} | Id: ${this.id.toString()} | Previous: ${this.previous?.value.toString()} | Next: ${this.next?.value.toString()}`
+  /**
+   * Can be used to uniquely identify a linked list
+   * @returns the id of the head node
+   */
+  getHeadId() {
+    return this.getHead().id
   }
-}
+
+  toString() {
+    return `Value: ${JSON.stringify(this.value)} | Id: ${this.id.toString()} | Previous: ${this.previous?.value.toString()} | Next: ${this.next?.value.toString()}`
+  }
+
+  printPath() {
+    let currentNode = this as LinkedListNode
+    while (currentNode.next) {
+      console.log(currentNode.toString())
+      currentNode = currentNode.next
+    }
+    console.log(currentNode.toString())
+  }
+ }
 
 export class DoublyLinkedList {
   head: LinkedListNode | null
