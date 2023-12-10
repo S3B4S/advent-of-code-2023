@@ -48,7 +48,7 @@ if (!process.env.AOC_SESSION_COOKIE) {
   process.exit(1)
 }
 
-const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d: )([\w\?\! ]*)(?= ---<\/h2>)/g
+const titleRegex = /(?<=<article class="day-desc"><h2>--- Day \d+: )([\w\?\! ]*)(?= ---<\/h2>)/g
 const exampleInputRegex = /(?<=<pre><code>)([\s\S]*?)(?=<\/code><\/pre>)/g
 
 const urlSite = `https://adventofcode.com/${argv.y}/day/${argv.d}`
