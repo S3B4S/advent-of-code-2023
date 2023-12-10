@@ -36,6 +36,12 @@ export class Queue<T> {
   peek() {
     return this._store[0];
   }
+  has(item: T) {
+    return this._store.includes(item);
+  }
+  some(comparator: (a: T) => boolean) {
+    return this._store.some(i => comparator(i));
+  }
   isEmpty() {
     return this._store.length === 0;
   }

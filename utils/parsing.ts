@@ -46,6 +46,17 @@ export const parseInputBlocks = (input: string) => {
     .filter(substr => substr !== ""))
 }
 
+export const Characters = {
+  WhiteRetroBlock: "█",  
+  Space: " ",
+  Dot: ".",
+  HashTag: "#",
+  Tilde: "~",
+  Star: "*",
+  Plus: "+",
+  At: "@",
+}
+
 export type Row = number
 export type Column = number
 export type Coordinate = [Row, Column]
@@ -92,6 +103,11 @@ export interface CoordinateRecord {
 
 export const coordinateToString = (c: CoordinateRecord) => `${c.y},${c.x}`
 
+export const coordStringToCoordRecord = (s: string): CoordinateRecord => {
+  const [y, x] = s.split(',').map(Number)
+  return { y, x }
+}
+
 // @TODO would be cool if I could pass in record as characters as type parameter to board
 /**
  * m x n board
@@ -137,6 +153,14 @@ export class Board {
     return this.content[0].length
   }
 
+  isOnBounds(coord: CoordinateRecord) {
+    return coord.y === 0 || coord.x === 0 || coord.y === this.amountRows() - 1 || coord.x === this.amountColumns() - 1
+  }
+
+  isOutsideBounds(coord: CoordinateRecord) {
+    return coord.y < 0 || coord.x < 0 || coord.y >= this.amountRows() || coord.x >= this.amountColumns()
+  }
+
   forEach(fn: (tile: string, coordinate: CoordinateRecord) => any) {
     return this.content.forEach((row, rowI) => row.forEach((tile, colI) => fn(tile, { y: rowI, x: colI })))
   }
@@ -153,7 +177,7 @@ export class Board {
     
     return checkDirections
       .map(dir => addCoordinate(relativeCoordinates[dir], coord))
-      .filter(c => !(c.x < 0 || c.y < 0))
+      .filter(c => !this.isOutsideBounds(c))
   }
 
   adjacentTiles(coord: CoordinateRecord, limitedTo?: Direction[]) {
