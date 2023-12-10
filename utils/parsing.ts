@@ -116,11 +116,11 @@ export const coordStringToCoordRecord = (s: string): CoordinateRecord => {
  * - y coordinates grow positive as going downwards / south
  * - x coordinates grow positive as going rightwards / east
  */
-export class Board {
-  content: string[][]
+export class Board<T> {
+  content: T[][]
 
   constructor(boardStr: string) {
-    this.content = boardStr.split('\n').map(l => l.split(''))
+    this.content = boardStr.split('\n').map(l => l.split('')) as T[][]
   }
 
   /**
@@ -131,24 +131,16 @@ export class Board {
     return this.content[c.y] && this.content[c.y][c.x]
   }
 
-  intersperse(el: string) {
+  intersperse(el: T) {
     const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, el]))
     const newAmountColumns = newColumns[0].length
-    const rowToIntersperse = [] as string[]
+    const rowToIntersperse = [] as T[]
     for (let i = 0; i < newAmountColumns; i++) {
       rowToIntersperse.push(el)
     }
 
-    // const newRows = newColumns.map(row => rowToIntersperse.flatMap((tile, i) => i === rowToIntersperse.length - 1 ? [tile] : [tile, row[i]]))
     const newRows = newColumns.flatMap((row, i) => i === this.amountRows() - 1 ? [[...row]] : [[...row], [...rowToIntersperse]])
-    // for (let i = 0; i < this.amountRows(); i++) {
-    //   if (i === this.amountRows() - 1) {
-    //     newColumns.push(newRows[i])
-    //     break
-    //   }
-    //   newColumns.push(newRows[i], rowToIntersperse)
-    // }
-    this.content = newRows
+    this.content = newRows as T[][]
   }
 
   /**
@@ -156,7 +148,7 @@ export class Board {
    * @param tile the tile to put in
    * @returns boolean depending on whether setting the value succeeded or not
    */
-  set(c: CoordinateRecord, tile: string) {
+  set(c: CoordinateRecord, tile: T) {
     if (!(this.content[c.y] && this.content[c.y][c.x])) {
       return false
     }
@@ -181,11 +173,11 @@ export class Board {
     return coord.y < 0 || coord.x < 0 || coord.y >= this.amountRows() || coord.x >= this.amountColumns()
   }
 
-  forEach(fn: (tile: string, coordinate: CoordinateRecord) => any) {
+  forEach(fn: (tile: T, coordinate: CoordinateRecord) => any) {
     return this.content.forEach((row, rowI) => row.forEach((tile, colI) => fn(tile, { y: rowI, x: colI })))
   }
 
-  find(tile: string): CoordinateRecord {
+  find(tile: T): CoordinateRecord {
     const y = this.content.findIndex(row => row.includes(tile))
     const x = this.content[y].indexOf(tile)
     return { x, y }

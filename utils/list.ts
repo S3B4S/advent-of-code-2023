@@ -1,9 +1,10 @@
 import { randomUUID } from "crypto"
 
-export class LinkedListNode {
-  value: any
-  next: LinkedListNode | null
-  previous: LinkedListNode | null
+// @TODO Can I infer T?
+export class LinkedListNode<T> {
+  value: T
+  next: LinkedListNode<T> | null
+  previous: LinkedListNode<T> | null
   id: string
 
   constructor(value: any) {
@@ -14,7 +15,7 @@ export class LinkedListNode {
   }
 
   getHead() {
-    let currentNode = this as LinkedListNode
+    let currentNode = this as LinkedListNode<T>
     while (currentNode.previous) {
       currentNode = currentNode.previous
     }
@@ -22,7 +23,7 @@ export class LinkedListNode {
   }
 
   getTail() {
-    let currentNode = this as LinkedListNode
+    let currentNode = this as LinkedListNode<T>
     while (currentNode.next) {
       currentNode = currentNode.next
     }
@@ -33,8 +34,8 @@ export class LinkedListNode {
    * From the current node, iterate until the tail
    * Execute callback function for every node
    */
-  iterateUntilLast(fn: (node: LinkedListNode) => any) {
-    let currentNode = this as LinkedListNode
+  iterateUntilLast(fn: (node: LinkedListNode<T>) => any) {
+    let currentNode = this as LinkedListNode<T>
     fn(currentNode)
     while (currentNode.next) {
       currentNode = currentNode.next
@@ -55,7 +56,7 @@ export class LinkedListNode {
   }
 
   printPath() {
-    let currentNode = this as LinkedListNode
+    let currentNode = this as LinkedListNode<T>
     while (currentNode.next) {
       console.log(currentNode.toString())
       currentNode = currentNode.next
@@ -64,9 +65,9 @@ export class LinkedListNode {
   }
  }
 
-export class DoublyLinkedList {
-  head: LinkedListNode | null
-  last: LinkedListNode | null
+export class DoublyLinkedList<T> {
+  head: LinkedListNode<T> | null
+  last: LinkedListNode<T> | null
   length: number
   id: string
 
@@ -77,8 +78,8 @@ export class DoublyLinkedList {
     this.id = randomUUID()
   }
 
-  push(value: any) {
-    const node = new LinkedListNode(value)
+  push(value: T) {
+    const node = new LinkedListNode<T>(value)
     if (!this.head) {
       this.head = node
       this.last = node

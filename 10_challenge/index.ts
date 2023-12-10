@@ -6,93 +6,104 @@ import chalk from "chalk"
 import { randomUUID } from "crypto"
 import { match } from "ts-pattern"
 
-class PipeBoard extends Board {
-  typeTiles = {
-    '|': {
-      name: 'vertical',
-      move: (incoming: Direction) => match(incoming)
-      // Read as "moving in while walking towards north, will lead you towards north"
-        .with(Direction.North, () => Direction.North)
-        .with(Direction.South, () => Direction.South)
-        .otherwise(() => undefined),
-      allowsOutgoing: [Direction.North, Direction.South],
-      allowsIncoming: [Direction.North, Direction.South],
-    },
-    '-': {
-      name: 'horizontal',
-      move: (incoming: Direction) => match(incoming)
-        .with(Direction.East, () => Direction.East)
-        .with(Direction.West, () => Direction.West)
-        .otherwise(() => undefined),
-      allowsOutgoing: [Direction.East, Direction.West],
-      allowsIncoming: [Direction.East, Direction.West],
-    },
-    'L': {
-      name: 'northAndEast',
-      move: (incoming: Direction) => match(incoming)
-        .with(Direction.South, () => Direction.East)
-        .with(Direction.West, () => Direction.North)
-        .otherwise(() => undefined),
-        allowsOutgoing: [Direction.North, Direction.East],
-      allowsIncoming: [Direction.South, Direction.West],
-    },
-    'J': {
-      name: 'northAndWest',
-      move: (incoming: Direction) => match(incoming)
-        .with(Direction.South, () => Direction.West)
-        .with(Direction.East, () => Direction.North)
-        .otherwise(() => undefined),
-      allowsOutgoing: [Direction.North, Direction.West],
-      allowsIncoming: [Direction.South, Direction.East],
-    },
-    '7': {
-      name: 'southAndWest',
-      move: (incoming: Direction) => match(incoming)
-        .with(Direction.North, () => Direction.West)
-        .with(Direction.East, () => Direction.South)
-        .otherwise(() => undefined),
-      allowsOutgoing: [Direction.West, Direction.South],
-      allowsIncoming: [Direction.East, Direction.North],
-    },
-    'F': {
-      name: 'southAndEast',
-      move: (incoming: Direction) => match(incoming)
-        .with(Direction.North, () => Direction.East)
-        .with(Direction.West, () => Direction.South)
-        .otherwise(() => undefined),
-      allowsOutgoing: [Direction.South, Direction.East],
-      allowsIncoming: [Direction.West, Direction.North],
-    },
-    'S': {
-      name: 'start',
-      move: (incoming: Direction) => undefined,
-      allowsOutgoing: [Direction.North, Direction.East, Direction.South, Direction.West],
-      allowsIncoming: [Direction.North, Direction.East, Direction.South, Direction.West],
-    },
-    '.': {
-      name: 'empty',
-      move: (incoming: Direction) => undefined,
-      allowsOutgoing: [] as Direction[],
-      allowsIncoming: [] as Direction[],
-    },
-  }
+const typeTiles = {
+  '|': {
+    name: 'vertical',
+    move: (incoming: Direction) => match(incoming)
+    // Read as "moving in while walking towards north, will lead you towards north"
+      .with(Direction.North, () => Direction.North)
+      .with(Direction.South, () => Direction.South)
+      .otherwise(() => undefined),
+    allowsOutgoing: [Direction.North, Direction.South],
+    allowsIncoming: [Direction.North, Direction.South],
+  },
+  '-': {
+    name: 'horizontal',
+    move: (incoming: Direction) => match(incoming)
+      .with(Direction.East, () => Direction.East)
+      .with(Direction.West, () => Direction.West)
+      .otherwise(() => undefined),
+    allowsOutgoing: [Direction.East, Direction.West],
+    allowsIncoming: [Direction.East, Direction.West],
+  },
+  'L': {
+    name: 'northAndEast',
+    move: (incoming: Direction) => match(incoming)
+      .with(Direction.South, () => Direction.East)
+      .with(Direction.West, () => Direction.North)
+      .otherwise(() => undefined),
+      allowsOutgoing: [Direction.North, Direction.East],
+    allowsIncoming: [Direction.South, Direction.West],
+  },
+  'J': {
+    name: 'northAndWest',
+    move: (incoming: Direction) => match(incoming)
+      .with(Direction.South, () => Direction.West)
+      .with(Direction.East, () => Direction.North)
+      .otherwise(() => undefined),
+    allowsOutgoing: [Direction.North, Direction.West],
+    allowsIncoming: [Direction.South, Direction.East],
+  },
+  '7': {
+    name: 'southAndWest',
+    move: (incoming: Direction) => match(incoming)
+      .with(Direction.North, () => Direction.West)
+      .with(Direction.East, () => Direction.South)
+      .otherwise(() => undefined),
+    allowsOutgoing: [Direction.West, Direction.South],
+    allowsIncoming: [Direction.East, Direction.North],
+  },
+  'F': {
+    name: 'southAndEast',
+    move: (incoming: Direction) => match(incoming)
+      .with(Direction.North, () => Direction.East)
+      .with(Direction.West, () => Direction.South)
+      .otherwise(() => undefined),
+    allowsOutgoing: [Direction.South, Direction.East],
+    allowsIncoming: [Direction.West, Direction.North],
+  },
+  'S': {
+    name: 'start',
+    move: (incoming: Direction) => undefined,
+    allowsOutgoing: [Direction.North, Direction.East, Direction.South, Direction.West],
+    allowsIncoming: [Direction.North, Direction.East, Direction.South, Direction.West],
+  },
+  '.': {
+    name: 'empty',
+    move: (incoming: Direction) => undefined,
+    allowsOutgoing: [] as Direction[],
+    allowsIncoming: [] as Direction[],
+  },
+}
+
+type Tile = keyof typeof typeTiles
+
+type TileNode = {
+  tile: Tile,
+  x: number,
+  y: number,
+  count: number,
+  incoming: Direction,
+  outgoingDirection?: Direction,
+  foundCycle: boolean
 }
 
 export const solvePart1 = (input: string) => {
-  const board = new PipeBoard(input)  
+  const board = new Board<Tile>(input)  
   const startPosition = board.find('S')
 
   // For every possible outgoing direction at startPosition,
   // create a new linked list which points to the start with the head
   // <linkedListId, linkedList>
-  const routes = new Map<string, [LinkedListNode]>()
+
+  const routes = new Map<string, [LinkedListNode<TileNode>]>()
   const visitedTiles = new Set<string>()
 
   board.adjacentTilesWithCoordinates(startPosition, [Direction.North, Direction.East, Direction.South, Direction.West]).forEach(({ tile, x, y }) => {
     const relDirection = relativeDirection(startPosition, { x, y })
-    const isValid = Boolean(board.typeTiles[tile as keyof typeof board.typeTiles].move(relDirection!))
+    const isValid = Boolean(typeTiles[tile].move(relDirection!))
     if (isValid) {
-      const node = new LinkedListNode({ tile, x, y, count: 1, incoming: relDirection, foundCycle: false })
+      const node = new LinkedListNode<TileNode>({ tile, x, y, count: 1, incoming: relDirection, foundCycle: false })
       routes.set(node.id, [node])
       visitedTiles.add(coordinateToString({ x, y }))
     }
@@ -102,7 +113,7 @@ export const solvePart1 = (input: string) => {
     for (const route of routes.values()) {
       if (route.at(-1)!.value.foundCycle) continue
       const lastNode = route.at(-1)!
-      const outgoingDirection = board.typeTiles[lastNode.value.tile as keyof typeof board.typeTiles].move(lastNode.value.incoming)
+      const outgoingDirection = typeTiles[lastNode.value.tile].move(lastNode.value.incoming)
       const newCoordinate = board.adjacentTilesWithCoordinates(lastNode.value, [outgoingDirection!])[0]      
       // If the new tile already has this coordinate, then it means we've started to detect a cycle
       if (visitedTiles.has(coordinateToString(newCoordinate))) {
@@ -110,7 +121,7 @@ export const solvePart1 = (input: string) => {
         continue
       }
   
-      const currentNode = new LinkedListNode({ tile: newCoordinate.tile, x: newCoordinate.x, y: newCoordinate.y, count: lastNode.value.count + 1, incoming: outgoingDirection, foundCycle: false })
+      const currentNode = new LinkedListNode<TileNode>({ tile: newCoordinate.tile, x: newCoordinate.x, y: newCoordinate.y, count: lastNode.value.count + 1, incoming: outgoingDirection, foundCycle: false })
       route.push(currentNode)
       lastNode.next = currentNode
       currentNode.previous = lastNode
@@ -119,10 +130,7 @@ export const solvePart1 = (input: string) => {
   }
 
   // Find highest count
-  // routes.values().next().value[0].printPath()
-  return [...routes.values()].reduce((acc, route) => {
-    return route.at(-1)?.value.count > acc ? route.at(-1)?.value.count : acc
-  }, 0)
+  return [...routes.values()].reduce((acc, route) => Math.max(route.at(-1)!.value.count, acc), 0)
 }
 
 // !!!
@@ -130,13 +138,13 @@ export const solvePart1 = (input: string) => {
 // So, we don't need to explicitly check for dots, we can check for the area encased by the loop
 // as long as it doesn't "escape" to outside the loop
 export const solvePart2 = (input: string) => {
-  const board = new PipeBoard(input)   
+  const board = new Board<keyof typeof typeTiles>(input)   
 
   // We're going to add padding around _every_ tile
   // And then re-close where the pipes do connect
   // That way we can easily check for openings
 
-  board.intersperse(Characters.Dot)
+  board.intersperse(Characters.Dot as Tile)
 
   const padding = 1
   const toVisit = new Queue<CoordinateRecord>()
@@ -148,8 +156,8 @@ export const solvePart2 = (input: string) => {
     const currentRecord = toVisit.dequeue()!
     visited.add(coordinateToString(currentRecord))
 
-    // Now, for every pipe, we're going to check if we can connect it straight to its neighbours without leaving any room
-    // If we can, then we can close it off
+    // Now, for every pipe, we're going to check if we can connect it straight to its
+    // neighbours without leaving any room. If we can, then we can close it off
     board.adjacentCoordinates(currentRecord, [Direction.North, Direction.East, Direction.South, Direction.West]).forEach((nb, index) => {
       const nbIsInDirection = relativeDirection(currentRecord, nb)!
 
@@ -173,14 +181,14 @@ export const solvePart2 = (input: string) => {
 
       if (board.get(paddedNb) === Characters.Dot || board.get(currentRecord) === Characters.Dot) {
         board.set(coordinateInBetween, Characters.Dot)
-      } else if (board.typeTiles[board.get(paddedNb) as keyof typeof board.typeTiles].allowsIncoming.includes(nbIsInDirection) && board.typeTiles[board.get(currentRecord) as keyof typeof board.typeTiles].allowsOutgoing.includes(nbIsInDirection)) {
+      } else if (typeTiles[board.get(paddedNb)].allowsIncoming.includes(nbIsInDirection) && typeTiles[board.get(currentRecord)].allowsOutgoing.includes(nbIsInDirection)) {
         if (nbIsInDirection === Direction.North || nbIsInDirection === Direction.South) {
           board.set(coordinateInBetween, '|')
         } else {
           board.set(coordinateInBetween, '-')
         }
       } else {
-        board.set(coordinateInBetween, Characters.Dot)
+        board.set(coordinateInBetween, Characters.Dot as Tile)
       }
 
       if (!visited.has(coordinateToString(paddedNb)) && !toVisit.some(item => item.y === paddedNb.y && item.x === paddedNb.x)) {
@@ -190,19 +198,22 @@ export const solvePart2 = (input: string) => {
     })
   }
 
+  // console.log()
+  // console.log(board.toString())
   const startPosition = board.find('S')
+  // console.log()
 
   // For every possible outgoing direction at startPosition,
   // create a new linked list which points to the start with the head
   // <linkedListId, linkedList>
-  const routes = new Map<string, [LinkedListNode]>()
+  const routes = new Map<string, [LinkedListNode<TileNode>]>()
   const visitedTiles = new Set<string>()
 
   board.adjacentTilesWithCoordinates(startPosition, [Direction.North, Direction.East, Direction.South, Direction.West]).forEach(({ tile, x, y }) => {
     const relDirection = relativeDirection(startPosition, { x, y })
-    const isValid = Boolean(board.typeTiles[tile as keyof typeof board.typeTiles].move(relDirection!))
+    const isValid = Boolean(typeTiles[tile].move(relDirection!))
     if (isValid) {
-      const node = new LinkedListNode({ tile, x, y, count: 1, incoming: relDirection, foundCycle: false })
+      const node = new LinkedListNode<TileNode>({ tile, x, y, count: 1, incoming: relDirection, foundCycle: false })
       routes.set(node.id, [node])
       visitedTiles.add(coordinateToString({ x, y }))
     }
@@ -212,7 +223,7 @@ export const solvePart2 = (input: string) => {
     for (const route of routes.values()) {
       if (route.at(-1)!.value.foundCycle) continue
       const lastNode = route.at(-1)!
-      const outgoingDirection = board.typeTiles[lastNode.value.tile as keyof typeof board.typeTiles].move(lastNode.value.incoming)
+      const outgoingDirection = typeTiles[lastNode.value.tile].move(lastNode.value.incoming)
       lastNode.value.outgoingDirection = outgoingDirection
       const newCoordinate = board.adjacentTilesWithCoordinates(lastNode.value, [outgoingDirection!])[0]      
       // If the new tile already has this coordinate, then it means we've started to detect a cycle
@@ -221,7 +232,7 @@ export const solvePart2 = (input: string) => {
         continue
       }
   
-      const currentNode = new LinkedListNode({ tile: newCoordinate.tile, x: newCoordinate.x, y: newCoordinate.y, count: lastNode.value.count + 1, incoming: outgoingDirection, foundCycle: false })
+      const currentNode = new LinkedListNode<TileNode>({ tile: newCoordinate.tile, x: newCoordinate.x, y: newCoordinate.y, count: lastNode.value.count + 1, incoming: outgoingDirection, foundCycle: false })
       route.push(currentNode)
       lastNode.next = currentNode
       currentNode.previous = lastNode
@@ -229,9 +240,7 @@ export const solvePart2 = (input: string) => {
     }
   }
 
-  const highestCount = [...routes.values()].reduce((acc, route) => {
-    return route.at(-1)?.value.count > acc ? route.at(-1)?.value.count : acc
-  }, 0)
+  const highestCount = [...routes.values()].reduce((acc, route) => Math.max(route.at(-1)!.value.count, acc), 0)
 
   const longestRouteCoordinates = new Set<string>()
   longestRouteCoordinates.add(coordinateToString(startPosition))
