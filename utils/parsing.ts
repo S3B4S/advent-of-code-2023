@@ -131,6 +131,26 @@ export class Board {
     return this.content[c.y] && this.content[c.y][c.x]
   }
 
+  intersperse(el: string) {
+    const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, el]))
+    const newAmountColumns = newColumns[0].length
+    const rowToIntersperse = [] as string[]
+    for (let i = 0; i < newAmountColumns; i++) {
+      rowToIntersperse.push(el)
+    }
+
+    // const newRows = newColumns.map(row => rowToIntersperse.flatMap((tile, i) => i === rowToIntersperse.length - 1 ? [tile] : [tile, row[i]]))
+    const newRows = newColumns.flatMap((row, i) => i === this.amountRows() - 1 ? [[...row]] : [[...row], [...rowToIntersperse]])
+    // for (let i = 0; i < this.amountRows(); i++) {
+    //   if (i === this.amountRows() - 1) {
+    //     newColumns.push(newRows[i])
+    //     break
+    //   }
+    //   newColumns.push(newRows[i], rowToIntersperse)
+    // }
+    this.content = newRows
+  }
+
   /**
    * @param c the coordinate where to update the tile
    * @param tile the tile to put in
