@@ -109,11 +109,11 @@ testWrapper(`Day 10`, () => {
     expect(solvePart1(fileInput)).toEqual(6815)
   })
 
-  test.skip("Part 2 - Example input 1", () => {
+  test("Part 2 - Example input 1", () => {
     expect(solvePart2(exmapleInput_Part2_1)).toEqual(4)
   })
 
-  test.skip("Part 2 - Example input 2", () => {
+  test("Part 2 - Example input 2", () => {
     expect(solvePart2(exmapleInput_Part2_2)).toEqual(4)
   })
 
@@ -121,19 +121,19 @@ testWrapper(`Day 10`, () => {
     expect(solvePart2(exmapleInput_Part2_3)).toEqual(4)
   })
 
-  test.skip("Part 2 - Example input 4", () => {
+  test("Part 2 - Example input 4", () => {
     expect(solvePart2(exmapleInput_Part2_4)).toEqual(10)
   })
 
-  test.skip("Part 2 - Example input 6", () => {
+  test("Part 2 - Example input 6", () => {
     expect(solvePart2(exmapleInput_Part2_6)).toEqual(8)
   })
 
-  test.skip("Part 2 - Example input - Contains random pipes", () => {
+  test("Part 2 - Example input - Contains random pipes", () => {
     expect(solvePart2(exampleInput_Part2_containsRandomPipes)).toEqual(10)
   })
   
   test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+    expect(solvePart2(fileInput)).toEqual(269)
   })
 })

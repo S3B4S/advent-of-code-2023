@@ -1,6 +1,7 @@
 import { Queue } from "@/utils/adt"
 import { LinkedListNode } from "@/utils/list"
 import { Board, Characters, CoordinateRecord, Direction, addCoordinate, coordStringToCoordRecord, coordinateToString, relativeDirection } from "@/utils/parsing"
+import { unsafe } from "bun"
 import chalk from "chalk"
 import { randomUUID } from "crypto"
 import { match } from "ts-pattern"
@@ -129,7 +130,66 @@ export const solvePart1 = (input: string) => {
 // So, we don't need to explicitly check for dots, we can check for the area encased by the loop
 // as long as it doesn't "escape" to outside the loop
 export const solvePart2 = (input: string) => {
-  const board = new PipeBoard(input)  
+  const board = new PipeBoard(input)   
+
+  // We're going to add padding around _every_ tile
+  // And then re-close where the pipes do connect
+  // That way we can easily check for openings
+
+  board.intersperse(Characters.Dot)
+
+  const padding = 1
+  const toVisit = new Queue<CoordinateRecord>()
+  const visited = new Set<string>()
+  const filledCoords = new Set<string>()
+  toVisit.enqueue({ y: 0, x: 0 })
+
+  while (toVisit.size() > 0) {
+    const currentRecord = toVisit.dequeue()!
+    visited.add(coordinateToString(currentRecord))
+
+    // Now, for every pipe, we're going to check if we can connect it straight to its neighbours without leaving any room
+    // If we can, then we can close it off
+    board.adjacentCoordinates(currentRecord, [Direction.North, Direction.East, Direction.South, Direction.West]).forEach((nb, index) => {
+      const nbIsInDirection = relativeDirection(currentRecord, nb)!
+
+      const paddedNb = match(nbIsInDirection)
+        .with(Direction.North, () => ({ y: nb.y - padding, x: nb.x }))
+        .with(Direction.East, () => ({ y: nb.y, x: nb.x + padding }))
+        .with(Direction.South, () => ({ y: nb.y + padding, x: nb.x }))
+        .with(Direction.West, () => ({ y: nb.y, x: nb.x - padding }))
+        .run()
+
+      if (board.isOutsideBounds(paddedNb)) return
+      
+      const coordinateInBetween = match(nbIsInDirection)
+        .with(Direction.North, () => ({ y: paddedNb.y + 1, x: paddedNb.x }))
+        .with(Direction.East, () => ({ y: paddedNb.y, x: paddedNb.x - 1 }))
+        .with(Direction.South, () => ({ y: paddedNb.y - 1, x: paddedNb.x }))
+        .with(Direction.West, () => ({ y: paddedNb.y, x: paddedNb.x + 1 }))
+        .run()
+
+      filledCoords.add(coordinateToString(coordinateInBetween))
+
+      if (board.get(paddedNb) === Characters.Dot || board.get(currentRecord) === Characters.Dot) {
+        board.set(coordinateInBetween, Characters.Dot)
+      } else if (board.typeTiles[board.get(paddedNb) as keyof typeof board.typeTiles].allowsIncoming.includes(nbIsInDirection) && board.typeTiles[board.get(currentRecord) as keyof typeof board.typeTiles].allowsOutgoing.includes(nbIsInDirection)) {
+        if (nbIsInDirection === Direction.North || nbIsInDirection === Direction.South) {
+          board.set(coordinateInBetween, '|')
+        } else {
+          board.set(coordinateInBetween, '-')
+        }
+      } else {
+        board.set(coordinateInBetween, Characters.Dot)
+      }
+
+      if (!visited.has(coordinateToString(paddedNb)) && !toVisit.some(item => item.y === paddedNb.y && item.x === paddedNb.x)) {
+        toVisit.enqueue(paddedNb)
+      }
+
+    })
+  }
+
   const startPosition = board.find('S')
 
   // For every possible outgoing direction at startPosition,
@@ -169,9 +229,6 @@ export const solvePart2 = (input: string) => {
     }
   }
 
-  // console.log(routes)
-  console.log(board.toString())
-  // Find highest count
   const highestCount = [...routes.values()].reduce((acc, route) => {
     return route.at(-1)?.value.count > acc ? route.at(-1)?.value.count : acc
   }, 0)
@@ -182,16 +239,8 @@ export const solvePart2 = (input: string) => {
   longestRoutes.forEach(route => {
     route[0].iterateUntilLast(node => {
       longestRouteCoordinates.add(coordinateToString({ x: node.value.x, y: node.value.y }))
-      // board.content[node.value.y][node.value.x] = match(node.value.outgoingDirection)
-      //   .with(Direction.North, () => 'N')
-      //   .with(Direction.East, () => 'E')
-      //   .with(Direction.South, () => 'S')
-      //   .with(Direction.West, () => 'W')
-      //   .otherwise(() => 'X')
     })
   })
-
-  // console.log(longestRouteCoordinates)
 
   // First we're going to flood and mark the areas that are surrounded by the loop
   // Ignoring the bits that can "spill" in between the pipes
@@ -248,10 +297,8 @@ export const solvePart2 = (input: string) => {
         }
 
         if (visited.has(neighbourStr) || toVisit.some(item => item.y === neighbour.y && item.x === neighbour.x)) return
-        // if (!visited.has(neighbourStr) && !toVisit.has(neighbour)) {
-          // console.log(coordinateToString(neighbour))
-          toVisit.enqueue(neighbour)
-        // }
+        
+        toVisit.enqueue(neighbour)
       })
     }
 
@@ -275,7 +322,7 @@ export const solvePart2 = (input: string) => {
   })
 
   // For debugging in console
-  console.log()
+  // console.log()
 
   const copyBoard = new Board(board.toString())
 
@@ -286,80 +333,44 @@ export const solvePart2 = (input: string) => {
   copyBoard.set(startPosition, chalk.yellow('S'))
 
   safeTiles.forEach(coordinate => {
-    copyBoard.set(coordStringToCoordRecord(coordinate), chalk.green(Characters.At))
+    copyBoard.set(coordStringToCoordRecord(coordinate), chalk.green(Characters.Star))
   })
 
   unsafeTiles.forEach(coordinate => {
     copyBoard.set(coordStringToCoordRecord(coordinate), chalk.red(Characters.At))
   })
 
-  console.log(copyBoard.toString())
-
-  // We're going to add padding around _every_ tile
-  // And then re-close where the pipes do connect
-  // That way we can easily check for openings
-
-  board.intersperse(Characters.Dot)
-  // console.log('INTERSPERSED')
-  // console.log(board.toString())
-  // console.log()
-  
-  // board.set({ y: 3, x: 2}, '|')
-  // console.log(board.toString())
-
-  // Now, for every pipe, we're going to check if we can connect it straight to its neighbours without leaving any room
-  // If we can, then we can close it off
-
-  const padding = 1
-  const toVisit = new Queue<CoordinateRecord>()
-  const visited = new Set<string>()
-  toVisit.enqueue({ y: 0, x: 0 })
-
-  while (toVisit.size() > 0) {
-    const currentRecord = toVisit.dequeue()!
-    visited.add(coordinateToString(currentRecord))
-
-    board.adjacentCoordinates(currentRecord, [Direction.North, Direction.East, Direction.South, Direction.West]).forEach((nb, index) => {
-      const nbIsInDirection = relativeDirection(currentRecord, nb)!
-
-      const paddedNb = match(nbIsInDirection)
-        .with(Direction.North, () => ({ y: nb.y - padding, x: nb.x }))
-        .with(Direction.East, () => ({ y: nb.y, x: nb.x + padding }))
-        .with(Direction.South, () => ({ y: nb.y + padding, x: nb.x }))
-        .with(Direction.West, () => ({ y: nb.y, x: nb.x - padding }))
-        .run()
-
-      if (board.isOutsideBounds(paddedNb)) return
-      
-      const coordinateInBetween = match(nbIsInDirection)
-        .with(Direction.North, () => ({ y: paddedNb.y + 1, x: paddedNb.x }))
-        .with(Direction.East, () => ({ y: paddedNb.y, x: paddedNb.x - 1 }))
-        .with(Direction.South, () => ({ y: paddedNb.y - 1, x: paddedNb.x }))
-        .with(Direction.West, () => ({ y: paddedNb.y, x: paddedNb.x + 1 }))
-        .run()
-
-      if (board.get(paddedNb) === Characters.Dot || board.get(currentRecord) === Characters.Dot) {
-        board.set(coordinateInBetween, chalk.red(Characters.Dot))
-      } else if (board.typeTiles[board.get(paddedNb) as keyof typeof board.typeTiles].allowsIncoming.includes(nbIsInDirection) && board.typeTiles[board.get(currentRecord) as keyof typeof board.typeTiles].allowsOutgoing.includes(nbIsInDirection)) {
-        if (nbIsInDirection === Direction.North || nbIsInDirection === Direction.South) {
-          board.set(coordinateInBetween, chalk.yellow('|'))
-        } else {
-          board.set(coordinateInBetween, chalk.yellow('-'))
-        }
-      } else {
-        board.set(coordinateInBetween, chalk.red(Characters.Dot))
+  // Now we can remove all the cells that were interspersed
+  const currentRec = { y: 0, x: 1 }
+  while (currentRec.y < board.amountRows()) {
+    if (currentRec.y % 2 === 1) {
+      while (currentRec.x < board.amountColumns()) {
+        copyBoard.set(currentRec, chalk.black(Characters.WhiteRetroBlock))
+        currentRec.x = 1 + currentRec.x
       }
-
-      if (!visited.has(coordinateToString(paddedNb)) && !toVisit.some(item => item.y === paddedNb.y && item.x === paddedNb.x)) {
-        toVisit.enqueue(paddedNb)
+    } else {
+      while (currentRec.x < board.amountColumns()) {
+        copyBoard.set(currentRec, chalk.black(Characters.WhiteRetroBlock))
+        currentRec.x = 2 + currentRec.x
       }
-
-    })
+    }
+    currentRec.y = 1 + currentRec.y
+    currentRec.x = 1
   }
 
-  console.log(board.toString())
+  filledCoords.forEach(coordinate => {
+    const coordRec = coordStringToCoordRecord(coordinate)
+    copyBoard.set(coordRec, chalk.black(Characters.WhiteRetroBlock))
+  })
 
-  return [...routes.values()].find(route => route.at(-1)?.value.count === highestCount)?.at(-1)?.value.count
+  let count = 0
+  copyBoard.forEach(tile => {
+    if (tile === chalk.green(Characters.Star)) {
+      count += 1
+    }
+  })
+
+  return count
 }
 
 
