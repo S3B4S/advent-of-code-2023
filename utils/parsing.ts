@@ -101,12 +101,15 @@ export interface CoordinateRecord {
   x: Column,
 }
 
+// @TODO update coordinateToString to serialiseCoord
 export const coordinateToString = (c: CoordinateRecord) => `${c.y},${c.x}`
+export const serialiseCoord = coordinateToString
 
 export const coordStringToCoordRecord = (s: string): CoordinateRecord => {
   const [y, x] = s.split(',').map(Number)
   return { y, x }
 }
+export const unserialiseCoord = coordStringToCoordRecord
 
 // @TODO would be cool if I could pass in record as characters as type parameter to board
 /**
@@ -179,6 +182,14 @@ export class Board<T> {
 
   iterateColumns(fn: (column: T[], i: number) => any) {
     return this.transpose().content.forEach(fn)
+  }
+
+  columns() {
+    return this.transpose().content
+  }
+
+  rows() {
+    return this.content
   }
 
   iterateRows(fn: (row: T[], i: number) => any) {
