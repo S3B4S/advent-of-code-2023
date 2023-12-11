@@ -131,18 +131,6 @@ export class Board<T> {
     return this.content[c.y] && this.content[c.y][c.x]
   }
 
-  intersperse(seperator: T) {
-    const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, seperator]))
-    const newAmountColumns = newColumns[0].length
-    const rowToIntersperse = [] as T[]
-    for (let i = 0; i < newAmountColumns; i++) {
-      rowToIntersperse.push(seperator)
-    }
-
-    const newRows = newColumns.flatMap((row, i) => i === this.amountRows() - 1 ? [[...row]] : [[...row], [...rowToIntersperse]])
-    this.content = newRows as T[][]
-  }
-
   /**
    * @param c the coordinate where to update the tile
    * @param tile the tile to put in
@@ -155,6 +143,46 @@ export class Board<T> {
 
     this.content[c.y][c.x] = tile
     return true
+  }
+
+  amountRows() {
+    return this.content.length
+  }
+
+  amountColumns() {
+    return this.content[0].length
+  }
+
+  transpose(): Board<T> {
+    const transposedContent: T[][] = [];
+    for (let i = 0; i < this.amountColumns(); i++) {
+      const column: T[] = [];
+      for (let j = 0; j < this.amountRows(); j++) {
+        column.push(this.content[j][i]);
+      }
+      transposedContent.push(column);
+    }
+    return new Board<T>(transposedContent.map(row => row.join('')).join('\n'));
+  }
+
+  intersperse(seperator: T) {
+    const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, seperator]))
+    const newAmountColumns = newColumns[0].length
+    const rowToIntersperse = [] as T[]
+    for (let i = 0; i < newAmountColumns; i++) {
+      rowToIntersperse.push(seperator)
+    }
+
+    const newRows = newColumns.flatMap((row, i) => i === this.amountRows() - 1 ? [[...row]] : [[...row], [...rowToIntersperse]])
+    this.content = newRows as T[][]
+  }
+
+  iterateColumns(fn: (column: T[], i: number) => any) {
+    return this.transpose().content.forEach(fn)
+  }
+
+  iterateRows(fn: (row: T[], i: number) => any) {
+    return this.content.forEach(fn)
   }
 
   insertColumn(c: Column, column: T[]) {
@@ -178,14 +206,6 @@ export class Board<T> {
 
     this.content.splice(r, 0, row)
     return true
-  }
-
-  amountRows() {
-    return this.content.length
-  }
-
-  amountColumns() {
-    return this.content[0].length
   }
 
   isOnBounds(coord: CoordinateRecord) {

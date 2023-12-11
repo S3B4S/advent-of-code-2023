@@ -107,3 +107,59 @@ test("Board - insert row of unequal length", () => {
     ["4", "5", "6"],
   ])
 })
+
+test("Board - transpose", () => {
+  const board = new Board<string>(`
+123
+456
+  `.trim())
+
+  expect(board.transpose().content).toEqual([
+    ["1", "4"],
+    ["2", "5"],
+    ["3", "6"],
+  ])
+})
+
+test("Board - transpose twice restores to original", () => {
+  const board = new Board<string>(`
+123
+456
+  `.trim())
+
+  expect(board.transpose().transpose().content).toEqual([
+    ["1", "2", "3"],
+    ["4", "5", "6"],
+  ])
+})
+
+test("Board - iterate columns", () => {
+  const board = new Board<string>(`
+123
+456
+  `.trim())
+
+  const columns = [] as string[][]
+  board.iterateColumns(column => columns.push(column))
+
+  expect(columns).toEqual([
+    ["1", "4"],
+    ["2", "5"],
+    ["3", "6"],
+  ])
+})
+
+test("Board - iterate rows", () => {
+  const board = new Board<string>(`
+123
+456
+  `.trim())
+
+  const rows = [] as string[][]
+  board.iterateRows(row => rows.push(row))
+
+  expect(rows).toEqual([
+    ["1", "2", "3"],
+    ["4", "5", "6"],
+  ])
+})
