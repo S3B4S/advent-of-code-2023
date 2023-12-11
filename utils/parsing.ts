@@ -131,12 +131,12 @@ export class Board<T> {
     return this.content[c.y] && this.content[c.y][c.x]
   }
 
-  intersperse(el: T) {
-    const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, el]))
+  intersperse(seperator: T) {
+    const newColumns = this.content.map(column => column.flatMap((tile, i) => i === column.length - 1 ? [tile] : [tile, seperator]))
     const newAmountColumns = newColumns[0].length
     const rowToIntersperse = [] as T[]
     for (let i = 0; i < newAmountColumns; i++) {
-      rowToIntersperse.push(el)
+      rowToIntersperse.push(seperator)
     }
 
     const newRows = newColumns.flatMap((row, i) => i === this.amountRows() - 1 ? [[...row]] : [[...row], [...rowToIntersperse]])
@@ -154,6 +154,29 @@ export class Board<T> {
     }
 
     this.content[c.y][c.x] = tile
+    return true
+  }
+
+  insertColumn(c: Column, column: T[]) {
+    if (column.length !== this.amountRows()) {
+      return false /* Column should be as big as the other ones */
+    }
+
+    this.content = this.content.map((row, i) => {
+      const newRow = [...row]
+      newRow.splice(c, 0, column[i])
+      return newRow
+    })
+
+    return true
+  }
+
+  insertRow(r: Row, row: T[]) {
+    if (row.length !== this.amountColumns()) {
+      return false /* Row should be as big as the other ones */
+    }
+
+    this.content.splice(r, 0, row)
     return true
   }
 
