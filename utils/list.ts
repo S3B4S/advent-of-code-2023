@@ -104,3 +104,15 @@ export const chunksOfN = (n: number) => (list: any[]) => {
   }
   return chunks
 }
+
+export const countWhile = <T>(predicate: (x: T) => boolean) => (list: T[]) => {
+  let count = 0
+  for (let i = 0; i < list.length; i++) {
+    if (predicate(list[i])) {
+      count++
+    } else {
+      break
+    }
+  }
+  return count
+}

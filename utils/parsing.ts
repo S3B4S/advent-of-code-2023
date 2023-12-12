@@ -227,6 +227,17 @@ export class Board<T> {
     return coord.y < 0 || coord.x < 0 || coord.y >= this.amountRows() || coord.x >= this.amountColumns()
   }
 
+  // Returns an array of all elements with coords,
+  // so that it can be filtered / mapped / reduced, whatever
+  asArray() {
+    return this.content.flatMap((row, y) => row.map((tile, x) => ({ tile, coord: { y, x } })))
+  }
+  
+  count(fn: (tile: T) => boolean) {
+    return this.asArray().filter(({ tile }) => fn(tile)).length
+    
+  }
+
   forEach(fn: (tile: T, coordinate: CoordinateRecord) => any) {
     return this.content.forEach((row, rowI) => row.forEach((tile, colI) => fn(tile, { y: rowI, x: colI })))
   }

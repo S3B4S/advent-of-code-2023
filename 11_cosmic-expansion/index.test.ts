@@ -25,11 +25,19 @@ testWrapper(`Day 11`, () => {
     expect(solvePart1(fileInput)).toEqual(9608724)
   })
 
-  test.skip("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+  test("Part 2 - Example input - expand by 2", () => {
+    expect(solvePart2(exampleInput, 2)).toEqual(374)
+  })
+
+  test("Part 2 - Example input - expand by 10", () => {
+    expect(solvePart2(exampleInput, 10)).toEqual(1030)
+  })
+
+  test("Part 2 - Example input - expand by 100", () => {
+    expect(solvePart2(exampleInput, 100)).toEqual(8410)
   })
   
-  test.skip("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+  test("Part 2 - File input", () => {
+    expect(solvePart2(fileInput, 1000000)).toEqual(904633799472)
   })
 })
