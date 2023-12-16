@@ -96,6 +96,8 @@ export const addCoordinate = (base: CoordinateRecord, toAdd: CoordinateRecord) =
   x: base.x + toAdd.x,
 })
 
+export const stepInDirection = (coord: CoordinateRecord, dir: Direction) => addCoordinate(coord, relativeCoordinates[dir])
+
 export interface CoordinateRecord {
   y: Row,
   x: Column,
@@ -123,7 +125,7 @@ export class Board<T> {
   content: T[][]
 
   constructor(boardStr: string) {
-    this.content = boardStr.split('\n').map(l => l.split('')) as T[][]
+    this.content = boardStr.trim().split('\n').map(l => l.split('')) as T[][]
   }
 
   /**
