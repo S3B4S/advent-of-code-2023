@@ -59,17 +59,14 @@ type Beam = {
   currentPos: CoordinateRecord,
   currentDirection: Direction,
 }
-export const solvePart1 = (input: string) => {
+export const solvePart1 = (input: string, startingBeam: Beam = {
+  currentPos: { x: 0, y: 0 },
+  currentDirection: Direction.East,
+}) => {
   const board = new Board<Tile>(input)
 
-  let beams: Beam[] = [
-    {
-      currentPos: { x: 0, y: 0 },
-      currentDirection: Direction.East,
-    }
-  ]
+  let beams: Beam[] = [startingBeam]
 
-  // console.log(board.toString())
   const history = new Set<string>()
   while (beams.length > 0) {
     const newBeams: Beam[] = []
@@ -117,6 +114,25 @@ export const solvePart1 = (input: string) => {
   return allPositions.size
 }
 
+// This could be optimised by memoisation,
+// where if you know if you move from coord X in direction Y, 
+// you will light up Z amount of tiles.
+// Would be a fun one to implement later.
 export const solvePart2 = (input: string) => {
-  return 0
+  const board = new Board<Tile>(input)
+  const allAmounts = []
+
+  for (const rowI of [0, board.amountRows() - 1]) {
+    for (let colI = 0; colI < board.amountColumns(); colI++) {
+      allAmounts.push(solvePart1(input, { currentPos: { y: rowI, x: colI }, currentDirection: rowI === 0 ? Direction.South : Direction.North} ))
+    }
+  }
+
+  for (const colI of [0, board.amountColumns() - 1]) {
+    for (let rowI = 0; rowI < board.amountRows(); rowI++) {
+      allAmounts.push(solvePart1(input, { currentPos: { y: rowI, x: colI }, currentDirection: colI === 0 ? Direction.East : Direction.West} ))
+    }
+  }
+  
+  return Math.max(...allAmounts)
 }

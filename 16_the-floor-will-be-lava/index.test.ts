@@ -25,11 +25,11 @@ testWrapper(`Day 16`, () => {
     expect(solvePart1(fileInput)).toEqual(8146)
   })
 
-  test.skip("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+  test("Part 2 - Example input", () => {
+    expect(solvePart2(exampleInput)).toEqual(51)
   })
   
-  test.skip("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+  test("Part 2 - File input", () => {
+    expect(solvePart2(fileInput)).toEqual(8358)
   })
 })
