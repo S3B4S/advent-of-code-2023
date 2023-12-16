@@ -1,3 +1,4 @@
+import { slidingWithRest } from "@/utils/list"
 import { logId } from "@/utils/misc"
 import { parseInputLines } from "@/utils/parsing"
 
@@ -87,28 +88,6 @@ const readFromCache = (seq: string, combinations: number[]) => {
   return cache[key]
 }
 
-/**
- * Slides a window over string or array. For example, if n is 3 and input is "hello",
- * the function will return an array of substrings of length 3: ["hel", "ell", "llo"].
- * @param n the window size
- * @returns all scanned items
- */
-export const sliding = (n: number) => (input: string): string[] => {
-  if (input.length <= n) return [input]
-  return [input.slice(0, n)].concat(sliding(n)(input.slice(1)))
-}
-
-/**
- * Slides a window over string or array and also returns the remainder of the string.
- * For example, if n is 3 and input is "hello",
- * the function will return an array of substrings of length 3: [["hel", "lo"], ["ell", "o"], ["llo", ""]].
- * @param n the window size
- * @returns all scanned items
- */
-export const slidingWithRest = (n: number) => (input: string): [string, string][] => {
-  if (input.length <= n) return [[input, ""]]
-  return [[input.slice(0, n), input.slice(n)] as [string, string]].concat(slidingWithRest(n)(input.slice(1)))
-}
 
 const recParse = (seq: string, groupSizes: number[], depth = 0): number => {
   const cached = readFromCache(seq, groupSizes)

@@ -116,3 +116,37 @@ export const countWhile = <T>(predicate: (x: T) => boolean) => (list: T[]) => {
   }
   return count
 }
+
+/**
+ * Zip two arrays together
+ * @param xs 
+ * @param ys 
+ * @returns 
+ */
+export const zip = <A, B>(xs: A[], ys: B[]) => {
+  const shortestLength = Math.min(xs.length, ys.length)
+  return xs.slice(0, shortestLength).map((x, i) => [x, ys[i]] as [A, B])
+}
+
+/**
+ * Slides a window over string or array. For example, if n is 3 and input is "hello",
+ * the function will return an array of substrings of length 3: ["hel", "ell", "llo"].
+ * @param n the window size
+ * @returns all scanned items
+ */
+export const sliding = <T>(n: number) => (input: (string | T[])): (string | T[])[] => {
+  if (input.length <= n) return [input]
+  return [input.slice(0, n)].concat(sliding(n)(input.slice(1)) as T[][])
+}
+
+/**
+ * Slides a window over string or array and also returns the remainder of the string.
+ * For example, if n is 3 and input is "hello",
+ * the function will return an array of substrings of length 3: [["hel", "lo"], ["ell", "o"], ["llo", ""]].
+ * @param n the window size
+ * @returns all scanned items
+ */
+export const slidingWithRest = (n: number) => (input: string): [string, string][] => {
+  if (input.length <= n) return [[input, ""]]
+  return [[input.slice(0, n), input.slice(n)] as [string, string]].concat(slidingWithRest(n)(input.slice(1)))
+}

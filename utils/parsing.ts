@@ -238,6 +238,22 @@ export class Board<T> {
     
   }
 
+  mapCell(coord: CoordinateRecord, fn: (tile: T) => T) {
+    this.set(coord, fn(this.get(coord)))
+  }
+
+  mapColumn(c: Column, fn: (tile: T) => T) {
+    this.iterateRows((_, i) => {
+      this.mapCell({ y: i, x: c }, fn)
+    })
+  }
+
+  mapRow(r: Row, fn: (tile: T) => T) {
+    this.iterateColumns((column, i) => {
+      this.mapCell({ y: r, x: i }, fn)
+    })
+  }
+
   forEach(fn: (tile: T, coordinate: CoordinateRecord) => any) {
     return this.content.forEach((row, rowI) => row.forEach((tile, colI) => fn(tile, { y: rowI, x: colI })))
   }

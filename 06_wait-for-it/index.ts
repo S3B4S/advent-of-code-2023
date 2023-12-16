@@ -1,3 +1,4 @@
+import { zip } from "@/utils/list"
 import { parseInputLines } from "@/utils/parsing"
 
 export const solvePart1 = (input: string) => {
@@ -27,8 +28,6 @@ export const solvePart2 = (input: string) => {
     Distance: ${newDistance}
   `.trim())
 }
-
-const zip = (xs: any[], ys: any[]) => xs.map((x, i) => [x, ys[i]])
 
 /**
  * Calculates how far the boat will go in the remaining time
