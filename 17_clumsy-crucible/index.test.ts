@@ -27,7 +27,7 @@ testWrapper(`Day 17`, () => {
 `.trim())).toEqual(3)
   })
 
-  test.skip("Part 1 - Example input", () => {
+  test("Part 1 - Example input", () => {
     expect(solvePart1(exampleInput)).toEqual(102)
   })
   

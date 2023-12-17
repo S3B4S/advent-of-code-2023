@@ -1,5 +1,5 @@
 import { Graph, Queue } from "@/utils/adt"
-import { Board, CoordinateRecord, Direction, relativeDirection, serialiseCoord, stepInDirection, unserialiseCoord } from "@/utils/parsing"
+import { Board, CoordinateRecord, Direction, relativeDirection, serialiseCoord, unserialiseCoord } from "@/utils/parsing"
 import { match } from "ts-pattern"
 
 export const solvePart1 = (input: string) => {
@@ -12,54 +12,6 @@ export const solvePart1 = (input: string) => {
 
   type Tile = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
   const board = new Board<Tile>(input)
-
-  // We're going to create a new graph out of the given board
-  // For each node, the outgoing edge will be the amount of steps
-  // that you're allowed to take from there
-  // So, 1, 2, or 3 steps in 1 direction.
-
-  const graph = new Graph(true)
-
-  board.forEach((tile, coord) => {
-    console.log()
-    console.log(serialiseCoord(coord))
-    // For each direction
-    for (const dir of [Direction.North, Direction.East, Direction.South, Direction.West]) {
-      // Check steps 1 to 3
-      for (let i = 1; i <= 3; i++) {
-        console.log("Direction:", dir, "Steps:", i)
-        let step = coord
-        let cost: number | undefined = 0
-
-        for (let j = 0; j < i; j++) {
-          // console.log('Step!')
-          step = stepInDirection(step, dir)
-          // console.log("Now on:", serialiseCoord(step), "cost:", cost)
-          if (board.isOutsideBounds(step)) {
-            cost = undefined
-            break
-          }
-          const tile = board.get(step)!
-          // console.log(tile)
-          cost += Number(tile)
-          // console.log(cost)
-        }
-
-        console.log("Arrived at", serialiseCoord(step), "with cost", cost)
-
-        // We were not able to get here
-        if (!cost) break
-
-        if (!board.isOutsideBounds(step) && !graph.hasEdge(serialiseCoord(coord), serialiseCoord(step))) {
-          graph.addEdge(serialiseCoord(coord), serialiseCoord(step), cost)
-        }
-      }
-    }
-  })
-
-  console.log(graph.getStore())
-
-  return 0
 
   // It's the serialised coordinate
   type NodeId = string
