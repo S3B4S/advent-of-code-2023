@@ -117,3 +117,53 @@ export class RepeatingSequence {
     return value;
   }
 }
+
+export class Graph {
+  private _store: Map<string, string[]> = new Map();
+  private _directed: boolean = false;
+
+  constructor(directed: boolean = false) {
+    this._directed = directed;
+  }
+
+  addEdge(from: string, to: string) {
+    if (!this._store.has(from)) {
+      this._store.set(from, []);
+    }
+    this._store.get(from)!.push(to);
+    if (!this._directed) {
+      if (!this._store.has(to)) {
+        this._store.set(to, []);
+      }
+      this._store.get(to)!.push(from);
+    }
+  }
+
+  getEdges(from: string) {
+    return this._store.get(from);
+  }
+
+  hasEdge(from: string, to: string) {
+    return this._store.has(from) && this._store.get(from)!.includes(to);
+  }
+
+  hasVertex(vertex: string) {
+    return this._store.has(vertex);
+  }
+
+  getVertices() {
+    return [...this._store.keys()];
+  }
+
+  getEdgesCount() {
+    return [...this._store.values()].reduce((acc, curr) => acc + curr.length, 0);
+  }
+
+  getVerticesCount() {
+    return this._store.size;
+  }
+
+  print() {
+    console.log(this._store);
+  }
+}
