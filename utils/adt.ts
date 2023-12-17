@@ -119,23 +119,23 @@ export class RepeatingSequence {
 }
 
 export class Graph {
-  private _store: Map<string, string[]> = new Map();
+  private _store: Map<string, { destination: string, cost: number }[]> = new Map();
   private _directed: boolean = false;
 
   constructor(directed: boolean = false) {
     this._directed = directed;
   }
 
-  addEdge(from: string, to: string) {
+  addEdge(from: string, to: string, cost: number = 0) {
     if (!this._store.has(from)) {
       this._store.set(from, []);
     }
-    this._store.get(from)!.push(to);
+    this._store.get(from)!.push({ destination: to, cost });
     if (!this._directed) {
       if (!this._store.has(to)) {
         this._store.set(to, []);
       }
-      this._store.get(to)!.push(from);
+      this._store.get(to)!.push({ destination: from, cost });
     }
   }
 
@@ -143,8 +143,12 @@ export class Graph {
     return this._store.get(from);
   }
 
+  getStore() {
+    return this._store;
+  }
+
   hasEdge(from: string, to: string) {
-    return this._store.has(from) && this._store.get(from)!.includes(to);
+    return this._store.has(from) && this._store.get(from)!.some(edge => edge.destination === to);
   }
 
   hasVertex(vertex: string) {
