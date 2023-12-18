@@ -1,5 +1,5 @@
 import { Graph, Queue } from "@/utils/adt"
-import { Board, CoordinateRecord, Direction, relativeDirection, serialiseCoord, unserialiseCoord } from "@/utils/parsing"
+import { Board, CoordinateRecord, Direction, relativeDirection, serialiseCoord, stepInDirection, unserialiseCoord } from "@/utils/parsing"
 import { match } from "ts-pattern"
 
 export const solvePart1 = (input: string) => {
@@ -13,72 +13,220 @@ export const solvePart1 = (input: string) => {
   type Tile = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
   const board = new Board<Tile>(input)
 
+  const graph = new Graph(true)
+
+  const serialiseGraphVertice = (coord: CoordinateRecord, allowedSteps: {
+    [Direction.North]: number,
+    [Direction.East]: number,
+    [Direction.South]: number,
+    [Direction.West]: number,
+  }) => {
+    return `${serialiseCoord(coord)}|N:${allowedSteps[Direction.North]},E:${allowedSteps[Direction.East]},S:${allowedSteps[Direction.South]},W:${allowedSteps[Direction.West]}`
+  }
+
+  const deserialiseGraphVertice = (serialised: string) => {
+    const [coord, allowedSteps] = serialised.split("|")
+    const [y, x] = coord.split(",").map(Number)
+    const [_, north, east, south, west] = allowedSteps.split(/,?[NESW]:/).map(Number)
+    return {
+      coord: { y, x },
+      allowedSteps: {
+        [Direction.North]: north,
+        [Direction.East]: east,
+        [Direction.South]: south,
+        [Direction.West]: west,
+      }
+    }
+  }
+
+  // For the start tile we need to add a special state, with all directions at 3, which is our starting point
+  for (const dir of [Direction.North, Direction.East, Direction.South, Direction.West]) {
+    // Check steps 1 to amountOfStepsRemaining  amount of steps
+    for (let i = 1; i <= 3; i++) {
+      let step = { y: 0, x: 0 }
+      let count = 0
+      for (let j = 0; j < i; j++) {
+        step = stepInDirection(step, dir)
+        count += Number(board.get(step))
+      }
+
+      // From the destination, we're only allowed to move in these directions:
+      // I'm not going to put 0 for the reversing direciton, since
+      // it will only incur increased cost anyway
+      const allowedDirections = {
+        [Direction.North]: dir === Direction.North ? 3 - i : 3,
+        [Direction.East]: dir === Direction.East ? 3 - i : 3,
+        [Direction.South]: dir === Direction.South ? 3 - i : 3,
+        [Direction.West]: dir === Direction.West ? 3 - i : 3,
+      }
+
+      if (board.isOutsideBounds(step)) continue
+
+      graph.addEdge(
+        serialiseGraphVertice({ y: 0, x: 0 }, {
+          [Direction.North]: 3,
+          [Direction.East]: 3,
+          [Direction.South]: 3,
+          [Direction.West]: 3,
+        }),
+        serialiseGraphVertice(step, allowedDirections),
+        count,
+      )
+    }
+  }
+
+  // We need to add the edges to the graph
+  board.forEach((_, coord) => {
+    // Each node will get 4 (directions) * 3 (steps) "states" at most
+    // Which will be represented as vertices
+
+    for (const incomingDir of [Direction.North, Direction.East, Direction.South, Direction.West]) {
+      // incomnig amount of steps
+      for (let parentSteps = 1; parentSteps <= 3; parentSteps++) {
+
+        const parentState: Record<Direction, number> = {
+          [Direction.North]: incomingDir === Direction.North ? 3 - parentSteps : 3,
+          [Direction.East]: incomingDir === Direction.East ? 3 - parentSteps : 3,
+          [Direction.South]: incomingDir === Direction.South ? 3 - parentSteps : 3,
+          [Direction.West]: incomingDir === Direction.West ? 3 - parentSteps : 3,
+        } as Record<Direction, number>
+
+        // For each direction
+        for (const dir of [Direction.North, Direction.East, Direction.South, Direction.West]) {
+          const amountOfStepsRemaining = parentState[dir]
+          // Check steps 1 to amountOfStepsRemaining  amount of steps
+          for (let i = 1; i <= amountOfStepsRemaining; i++) {
+            let step = coord
+            let count = 0
+            for (let j = 0; j < i; j++) {
+              step = stepInDirection(step, dir)
+              count += Number(board.get(step))
+            }
+
+            // From the destination, we're only allowed to move in these directions:
+            // I'm not going to put 0 for the reversing direciton, since
+            // it will only incur increased cost anyway
+            const allowedDirections = {
+              [Direction.North]: dir === Direction.North ? amountOfStepsRemaining - i : 3,
+              [Direction.East]: dir === Direction.East ? amountOfStepsRemaining - i : 3,
+              [Direction.South]: dir === Direction.South ? amountOfStepsRemaining - i : 3,
+              [Direction.West]: dir === Direction.West ? amountOfStepsRemaining - i : 3,
+            }
+
+            if (board.isOutsideBounds(step)) continue
+
+            graph.addEdge(
+              serialiseGraphVertice(coord, parentState),
+              serialiseGraphVertice(step, allowedDirections),
+              count,
+            )
+          }
+        }
+      }
+    }
+  })
+  
   // It's the serialised coordinate
   type NodeId = string
 
-  // Dijkstra
-  const queue = new Queue<CoordinateRecord>()
-  const visited = new Set<NodeId>()
+  // Now we need to run Dijkstra on the graph
+  const queue = new Queue<NodeId>()
+  const history = new Set<NodeId>()
   const distances = new Map<NodeId, number>()
-  const pathTo = new Map<NodeId, {node: NodeId, direction: Direction}[]>()
+  // const pathTo = new Map<NodeId, {node: NodeId, direction: Direction}[]>()
 
-  const current = { y: 0, x: 0 }
+  const current = serialiseGraphVertice({ y: 0, x: 0 }, {
+    [Direction.North]: 3,
+    [Direction.East]: 3,
+    [Direction.South]: 3,
+    [Direction.West]: 3,
+  })
   queue.enqueue(current)
-  distances.set(serialiseCoord(current), 0)
-  pathTo.set(serialiseCoord(current), [])
+  distances.set(current, 0)
+  // pathTo.set(serialiseCoord(current), [])
 
   while (!queue.isEmpty()) {
-    const current = queue.dequeue()!
-    const currentId = serialiseCoord(current)
-    visited.add(currentId)
+    const currentId = queue.dequeue()!
+    const current = deserialiseGraphVertice(currentId)
+    history.add(currentId)
 
-    const logCondition = [0, 1].includes(current.y) && [0, 1].includes(current.x) && false
+    // console.log(current)
+
+    const logCondition = [1].includes(current.coord.y) && [5].includes(current.coord.x) && false
     const logIfTrue = (...args: any[]) => {
       if (logCondition) {
         console.log(...args)
       }
     }
+    
     logIfTrue('---')
     logIfTrue("Currently on:", currentId)
 
     const currentDistance = distances.get(currentId)!
-    const currentPath = pathTo.get(currentId)!
+    // console.log(currentDistance)
+    // const currentPath = pathTo.get(currentId)!
 
-    const neighbours = board.adjacentCoordinates(current, [Direction.North, Direction.East, Direction.South, Direction.West])
-    for (const neighbour of neighbours) {
-      const neighbourId = serialiseCoord(neighbour)
-      logIfTrue("Neighbour:", neighbourId)
-      const distanceA = currentDistance + Number(board.get(neighbour))
-      const directionNeighbour = relativeDirection(current, neighbour)!
+    for (const outgoingEdge of graph.getEdges(currentId)!) {
+      // console.log(outgoingEdge)
+      const distanceA = currentDistance + outgoingEdge.cost
+      const neighbourId = outgoingEdge.destination
 
-      if (currentPath.length >= 3 && currentPath.slice(-3).every(({direction}) => direction === currentPath.at(-1)!.direction)) {
-        // IF we've already moved 3 times in the same direction,
-        // We will not be allowed to move in that direction again
-        if (directionNeighbour === currentPath.at(-1)!.direction) {
-          continue
-        }
-      }
-
-      // We need to check if we can get there faster by going through the current node
       if (distances.has(neighbourId)) {
         const distanceB = distances.get(neighbourId)!
         if (distanceA < distanceB) {
           logIfTrue('GO FASTERRRRRR!!!!')
           distances.set(neighbourId, distanceA)
-          pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
+          // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
         }
         continue
       }
 
-      // If the neighbour has not been visited before
       distances.set(neighbourId, distanceA)
-      pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
-
-      logIfTrue(pathTo)
-      logIfTrue(distances)
-      if (!queue.some(coord => serialiseCoord(coord) === neighbourId)) queue.enqueue(neighbour)
+      if (!history.has(neighbourId)) queue.enqueue(neighbourId)
     }
+
+    // const neighbours = board.adjacentCoordinates(current.coord, [Direction.North, Direction.East, Direction.South, Direction.West])
+    // for (const neighbour of neighbours) {
+      // const neighbourId = serialiseCoord(neighbour)
+      // logIfTrue("Neighbour:", neighbourId)
+      // const distanceA = currentDistance + Number(board.get(neighbour))
+      // const directionNeighbour = relativeDirection(current.coord, neighbour)!
+
+      // if (currentPath.length >= 3 && currentPath.slice(-3).every(({direction}) => direction === currentPath.at(-1)!.direction)) {
+      //   // IF we've already moved 3 times in the same direction,
+      //   // We will not be allowed to move in that direction again
+      //   if (directionNeighbour === currentPath.at(-1)!.direction) {
+      //     continue
+      //   }
+      // }
+
+      // We need to check if we can get there faster by going through the current node
+      // if (distances.has(neighbourId)) {
+      //   const distanceB = distances.get(neighbourId)!
+      //   if (distanceA < distanceB) {
+      //     logIfTrue('GO FASTERRRRRR!!!!')
+      //     distances.set(neighbourId, distanceA)
+      //     pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
+      //   }
+      //   continue
+      // }
+
+      // If the neighbour has not been visited before
+      // distances.set(neighbourId, distanceA)
+      // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
+
+      // logIfTrue(pathTo)
+      // logIfTrue(distances)
+      // if (!queue.some(coord => coord === neighbourId)) queue.enqueue(neighbourId)
+    // }
   }
+  
+  const distancesToDestination = [...distances.entries()]
+    .filter(distance => {
+      return distance[0].includes((board.amountRows() - 1) + "," + (board.amountColumns() - 1))
+    })
+    .map(distance => distance[1])
+  return Math.min(...distancesToDestination)
 
   const destination = {
     y: board.amountRows() - 1,
@@ -86,13 +234,13 @@ export const solvePart1 = (input: string) => {
   }
 
   const pathToDestination = pathTo.get(serialiseCoord(destination))
-  console.log(pathToDestination)
+  // console.log(pathToDestination)
   for (const step of pathToDestination!) {
     board.mapCell(unserialiseCoord(step.node), () => {
       return match(step.direction)
         .with(Direction.North, () => "^")
         .with(Direction.East, () => ">")
-        .with(Direction.South, () => "V")
+        .with(Direction.South, () => "v")
         .with(Direction.West, () => "<")
         .otherwise(() => "X") as unknown as Tile
     })
