@@ -1,5 +1,5 @@
 import { Graph, Queue } from "@/utils/adt"
-import { Board, CoordinateRecord, Direction, relativeDirection, serialiseCoord, stepInDirection, unserialiseCoord } from "@/utils/parsing"
+import { Board, CoordinateRecord, Direction, serialiseCoord, stepInDirection } from "@/utils/parsing"
 import { match } from "ts-pattern"
 
 export const solvePart1 = (input: string) => {
@@ -126,15 +126,12 @@ export const solvePart1 = (input: string) => {
     }
   })
   
-  // console.log(graph.getStore())
   // It's the serialised coordinate
   type NodeId = string
 
   // Now we need to run Dijkstra on the graph
   const queue = new Queue<NodeId>()
-  const history = new Set<NodeId>()
   const distances = new Map<NodeId, number>()
-  // const pathTo = new Map<NodeId, {node: NodeId, direction: Direction}[]>()
 
   const current = serialiseGraphVertice({ y: 0, x: 0 }, {
     [Direction.North]: 3,
@@ -142,8 +139,6 @@ export const solvePart1 = (input: string) => {
     [Direction.South]: 3,
     [Direction.West]: 3,
   })
-  // queue.enqueue(current)
-  // pathTo.set(serialiseCoord(current), [])
 
   for (const verticeId of graph.getVertices()) {
     distances.set(verticeId, Infinity)
@@ -161,104 +156,15 @@ export const solvePart1 = (input: string) => {
       return accMin < currentMin ? acc : current
     })
 
-    // console.log(queue.allItems())
     queue.remove(vMinDistance)
-    // console.log(queue.allItems())
-    // console.log(vMinDistance)
 
     for (const neighbour of graph.getEdges(vMinDistance)!) {
       if (!queue.has(neighbour.destination)) continue
       const alt = distances.get(vMinDistance)! + neighbour.cost
       if (alt < distances.get(neighbour.destination)!) {
         distances.set(neighbour.destination, alt)
-
-        const nb = deserialiseGraphVertice(neighbour.destination)
-        if (nb.coord.x === board.amountColumns() - 1 && nb.coord.y === board.amountRows() - 1) {
-          // Check if we already have more than N distances found to this destination
-          // And then stop (we're assuming we can already find the shortest path within N)
-          if ([...distances.entries()].filter(([key, value]) => {
-            return key.includes((board.amountRows() - 1) + "," + (board.amountColumns() - 1))
-          }).length > 10) {
-            forceStop = true
-            break
-          }
-        }
       }
     }
-
-    // const currentId = queue.dequeue()!
-    // const current = deserialiseGraphVertice(currentId)
-    // history.add(currentId)
-
-    // // console.log(current)
-
-    // const logCondition = [1].includes(current.coord.y) && [5].includes(current.coord.x) && false
-    // const logIfTrue = (...args: any[]) => {
-    //   if (logCondition) {
-    //     console.log(...args)
-    //   }
-    // }
-    
-    // logIfTrue('---')
-    // logIfTrue("Currently on:", currentId)
-
-    // const currentDistance = distances.get(currentId)!
-    // // console.log(currentDistance)
-    // // const currentPath = pathTo.get(currentId)!
-
-    // for (const outgoingEdge of graph.getEdges(currentId)!) {
-    //   // console.log(outgoingEdge)
-    //   const distanceA = currentDistance + outgoingEdge.cost
-    //   const neighbourId = outgoingEdge.destination
-
-    //   if (distances.has(neighbourId)) {
-    //     const distanceB = distances.get(neighbourId)!
-    //     if (distanceA < distanceB) {
-    //       logIfTrue('GO FASTERRRRRR!!!!')
-    //       distances.set(neighbourId, distanceA)
-    //       // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
-    //     }
-    //     continue
-    //   }
-
-    //   distances.set(neighbourId, distanceA)
-    //   if (!history.has(neighbourId)) queue.enqueue(neighbourId)
-    // }
-
-    // const neighbours = board.adjacentCoordinates(current.coord, [Direction.North, Direction.East, Direction.South, Direction.West])
-    // for (const neighbour of neighbours) {
-      // const neighbourId = serialiseCoord(neighbour)
-      // logIfTrue("Neighbour:", neighbourId)
-      // const distanceA = currentDistance + Number(board.get(neighbour))
-      // const directionNeighbour = relativeDirection(current.coord, neighbour)!
-
-      // if (currentPath.length >= 3 && currentPath.slice(-3).every(({direction}) => direction === currentPath.at(-1)!.direction)) {
-      //   // IF we've already moved 3 times in the same direction,
-      //   // We will not be allowed to move in that direction again
-      //   if (directionNeighbour === currentPath.at(-1)!.direction) {
-      //     continue
-      //   }
-      // }
-
-      // We need to check if we can get there faster by going through the current node
-      // if (distances.has(neighbourId)) {
-      //   const distanceB = distances.get(neighbourId)!
-      //   if (distanceA < distanceB) {
-      //     logIfTrue('GO FASTERRRRRR!!!!')
-      //     distances.set(neighbourId, distanceA)
-      //     pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
-      //   }
-      //   continue
-      // }
-
-      // If the neighbour has not been visited before
-      // distances.set(neighbourId, distanceA)
-      // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
-
-      // logIfTrue(pathTo)
-      // logIfTrue(distances)
-      // if (!queue.some(coord => coord === neighbourId)) queue.enqueue(neighbourId)
-    // }
   }
   
   const distancesToDestination = [...distances.entries()]
@@ -268,28 +174,6 @@ export const solvePart1 = (input: string) => {
     .map(distance => distance[1])
   
   return Math.min(...distancesToDestination)
-
-  const destination = {
-    y: board.amountRows() - 1,
-    x: board.amountColumns() - 1,
-  }
-
-  const pathToDestination = pathTo.get(serialiseCoord(destination))
-  // console.log(pathToDestination)
-  for (const step of pathToDestination!) {
-    board.mapCell(unserialiseCoord(step.node), () => {
-      return match(step.direction)
-        .with(Direction.North, () => "^")
-        .with(Direction.East, () => ">")
-        .with(Direction.South, () => "v")
-        .with(Direction.West, () => "<")
-        .otherwise(() => "X") as unknown as Tile
-    })
-  }
-
-  console.log(board.toString())
-
-  return distances.get(serialiseCoord(destination))
 }
 
 export const solvePart2 = (input: string) => {
