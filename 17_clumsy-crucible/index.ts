@@ -152,7 +152,8 @@ export const solvePart1 = (input: string) => {
 
   distances.set(current, 0)
 
-  while (!queue.isEmpty()) {
+  let forceStop = false
+  while (!queue.isEmpty() && !forceStop) {
     // Get vertice with lowest cost
     const vMinDistance = queue.allItems().reduce((acc, current) => {
       const accMin = distances.get(acc)!
@@ -170,12 +171,18 @@ export const solvePart1 = (input: string) => {
       const alt = distances.get(vMinDistance)! + neighbour.cost
       if (alt < distances.get(neighbour.destination)!) {
         distances.set(neighbour.destination, alt)
-      }
 
-      const distanceA = distances.get(vMinDistance)! + neighbour.cost
-      const distanceB = distances.get(neighbour.destination)!
-      if (distanceA < distanceB) {
-        distances.set(neighbour.destination, distanceA)
+        const nb = deserialiseGraphVertice(neighbour.destination)
+        if (nb.coord.x === board.amountColumns() - 1 && nb.coord.y === board.amountRows() - 1) {
+          // Check if we already have more than N distances found to this destination
+          // And then stop (we're assuming we can already find the shortest path within N)
+          if ([...distances.entries()].filter(([key, value]) => {
+            return key.includes((board.amountRows() - 1) + "," + (board.amountColumns() - 1))
+          }).length > 10) {
+            forceStop = true
+            break
+          }
+        }
       }
     }
 
