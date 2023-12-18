@@ -42,6 +42,15 @@ export class Queue<T> {
   some(comparator: (a: T) => boolean) {
     return this._store.some(i => comparator(i));
   }
+  allItems() {
+    return this._store;
+  }
+  remove(item: T) {
+    const index = this._store.indexOf(item);
+    if (index > -1) {
+      this._store.splice(index, 1);
+    }
+  }
   isEmpty() {
     return this._store.length === 0;
   }

@@ -142,49 +142,81 @@ export const solvePart1 = (input: string) => {
     [Direction.South]: 3,
     [Direction.West]: 3,
   })
-  queue.enqueue(current)
-  distances.set(current, 0)
+  // queue.enqueue(current)
   // pathTo.set(serialiseCoord(current), [])
 
+  for (const verticeId of graph.getVertices()) {
+    distances.set(verticeId, Infinity)
+    queue.enqueue(verticeId)
+  }
+
+  distances.set(current, 0)
+
   while (!queue.isEmpty()) {
-    const currentId = queue.dequeue()!
-    const current = deserialiseGraphVertice(currentId)
-    history.add(currentId)
+    // Get vertice with lowest cost
+    const vMinDistance = queue.allItems().reduce((acc, current) => {
+      const accMin = distances.get(acc)!
+      const currentMin = distances.get(current)!
+      return accMin < currentMin ? acc : current
+    })
 
-    // console.log(current)
+    // console.log(queue.allItems())
+    queue.remove(vMinDistance)
+    // console.log(queue.allItems())
+    // console.log(vMinDistance)
 
-    const logCondition = [1].includes(current.coord.y) && [5].includes(current.coord.x) && false
-    const logIfTrue = (...args: any[]) => {
-      if (logCondition) {
-        console.log(...args)
+    for (const neighbour of graph.getEdges(vMinDistance)!) {
+      if (!queue.has(neighbour.destination)) continue
+      const alt = distances.get(vMinDistance)! + neighbour.cost
+      if (alt < distances.get(neighbour.destination)!) {
+        distances.set(neighbour.destination, alt)
+      }
+
+      const distanceA = distances.get(vMinDistance)! + neighbour.cost
+      const distanceB = distances.get(neighbour.destination)!
+      if (distanceA < distanceB) {
+        distances.set(neighbour.destination, distanceA)
       }
     }
+
+    // const currentId = queue.dequeue()!
+    // const current = deserialiseGraphVertice(currentId)
+    // history.add(currentId)
+
+    // // console.log(current)
+
+    // const logCondition = [1].includes(current.coord.y) && [5].includes(current.coord.x) && false
+    // const logIfTrue = (...args: any[]) => {
+    //   if (logCondition) {
+    //     console.log(...args)
+    //   }
+    // }
     
-    logIfTrue('---')
-    logIfTrue("Currently on:", currentId)
+    // logIfTrue('---')
+    // logIfTrue("Currently on:", currentId)
 
-    const currentDistance = distances.get(currentId)!
-    // console.log(currentDistance)
-    // const currentPath = pathTo.get(currentId)!
+    // const currentDistance = distances.get(currentId)!
+    // // console.log(currentDistance)
+    // // const currentPath = pathTo.get(currentId)!
 
-    for (const outgoingEdge of graph.getEdges(currentId)!) {
-      // console.log(outgoingEdge)
-      const distanceA = currentDistance + outgoingEdge.cost
-      const neighbourId = outgoingEdge.destination
+    // for (const outgoingEdge of graph.getEdges(currentId)!) {
+    //   // console.log(outgoingEdge)
+    //   const distanceA = currentDistance + outgoingEdge.cost
+    //   const neighbourId = outgoingEdge.destination
 
-      if (distances.has(neighbourId)) {
-        const distanceB = distances.get(neighbourId)!
-        if (distanceA < distanceB) {
-          logIfTrue('GO FASTERRRRRR!!!!')
-          distances.set(neighbourId, distanceA)
-          // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
-        }
-        continue
-      }
+    //   if (distances.has(neighbourId)) {
+    //     const distanceB = distances.get(neighbourId)!
+    //     if (distanceA < distanceB) {
+    //       logIfTrue('GO FASTERRRRRR!!!!')
+    //       distances.set(neighbourId, distanceA)
+    //       // pathTo.set(neighbourId, [...currentPath, {node: currentId, direction: directionNeighbour}])
+    //     }
+    //     continue
+    //   }
 
-      distances.set(neighbourId, distanceA)
-      if (!history.has(neighbourId)) queue.enqueue(neighbourId)
-    }
+    //   distances.set(neighbourId, distanceA)
+    //   if (!history.has(neighbourId)) queue.enqueue(neighbourId)
+    // }
 
     // const neighbours = board.adjacentCoordinates(current.coord, [Direction.North, Direction.East, Direction.South, Direction.West])
     // for (const neighbour of neighbours) {
