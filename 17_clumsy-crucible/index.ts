@@ -54,10 +54,10 @@ export const solvePart1 = (input: string) => {
       // I'm not going to put 0 for the reversing direciton, since
       // it will only incur increased cost anyway
       const allowedDirections = {
-        [Direction.North]: dir === Direction.North ? 3 - i : 3,
-        [Direction.East]: dir === Direction.East ? 3 - i : 3,
-        [Direction.South]: dir === Direction.South ? 3 - i : 3,
-        [Direction.West]: dir === Direction.West ? 3 - i : 3,
+        [Direction.North]: match(dir).with(Direction.North, () => 3 - i).with(Direction.South, () => 0).otherwise(() => 3),
+        [Direction.East]: match(dir).with(Direction.East, () => 3 - i).with(Direction.West, () => 0).otherwise(() => 3),
+        [Direction.South]: match(dir).with(Direction.South, () => 3 - i).with(Direction.North, () => 0).otherwise(() => 3),
+        [Direction.West]: match(dir).with(Direction.West, () => 3 - i).with(Direction.East, () => 0).otherwise(() => 3),
       }
 
       if (board.isOutsideBounds(step)) continue
@@ -85,10 +85,10 @@ export const solvePart1 = (input: string) => {
       for (let parentSteps = 1; parentSteps <= 3; parentSteps++) {
 
         const parentState: Record<Direction, number> = {
-          [Direction.North]: incomingDir === Direction.North ? 3 - parentSteps : 3,
-          [Direction.East]: incomingDir === Direction.East ? 3 - parentSteps : 3,
-          [Direction.South]: incomingDir === Direction.South ? 3 - parentSteps : 3,
-          [Direction.West]: incomingDir === Direction.West ? 3 - parentSteps : 3,
+          [Direction.North]: match(incomingDir).with(Direction.North, () => 3 - parentSteps).with(Direction.South, () => 0).otherwise(() => 3),
+          [Direction.East]: match(incomingDir).with(Direction.East, () => 3 - parentSteps).with(Direction.West, () => 0).otherwise(() => 3),
+          [Direction.South]: match(incomingDir).with(Direction.South, () => 3 - parentSteps).with(Direction.North, () => 0).otherwise(() => 3),
+          [Direction.West]: match(incomingDir).with(Direction.West, () => 3 - parentSteps).with(Direction.East, () => 0).otherwise(() => 3),
         } as Record<Direction, number>
 
         // For each direction
@@ -107,10 +107,10 @@ export const solvePart1 = (input: string) => {
             // I'm not going to put 0 for the reversing direciton, since
             // it will only incur increased cost anyway
             const allowedDirections = {
-              [Direction.North]: dir === Direction.North ? amountOfStepsRemaining - i : 3,
-              [Direction.East]: dir === Direction.East ? amountOfStepsRemaining - i : 3,
-              [Direction.South]: dir === Direction.South ? amountOfStepsRemaining - i : 3,
-              [Direction.West]: dir === Direction.West ? amountOfStepsRemaining - i : 3,
+              [Direction.North]: match(dir).with(Direction.North, () => amountOfStepsRemaining - i).with(Direction.South, () => 0).otherwise(() => 3),
+              [Direction.East]: match(dir).with(Direction.East, () => amountOfStepsRemaining - i).with(Direction.West, () => 0).otherwise(() => 3),
+              [Direction.South]: match(dir).with(Direction.South, () => amountOfStepsRemaining - i).with(Direction.North, () => 0).otherwise(() => 3),
+              [Direction.West]: match(dir).with(Direction.West, () => amountOfStepsRemaining - i).with(Direction.East, () => 0).otherwise(() => 3)
             }
 
             if (board.isOutsideBounds(step)) continue
@@ -126,6 +126,7 @@ export const solvePart1 = (input: string) => {
     }
   })
   
+  // console.log(graph.getStore())
   // It's the serialised coordinate
   type NodeId = string
 
@@ -226,6 +227,7 @@ export const solvePart1 = (input: string) => {
       return distance[0].includes((board.amountRows() - 1) + "," + (board.amountColumns() - 1))
     })
     .map(distance => distance[1])
+  
   return Math.min(...distancesToDestination)
 
   const destination = {
