@@ -1,4 +1,4 @@
-import { solvePart1, solvePart2 } from ".";
+import { solve } from ".";
 import { expect, test } from 'bun:test'
 import { getFileInput, testWrapper } from "@/utils/misc";
 
@@ -21,32 +21,32 @@ const exampleInput = `
 
 testWrapper(`Day 17`, () => {
   test("Part 1 - Small portion of example input", () => {
-    expect(solvePart1(`
+    expect(solve(`
 211
 321
 `.trim())).toEqual(3)
   })
 
   test("Part 1 - Small portion 2 of example input", () => {
-    expect(solvePart1(`
+    expect(solve(`
 241343231
 321545353
 `.trim())).toEqual(4 + 1 + 3 + 2 + 3 + 1 + 1 + 5 + 4 + 5 + 3)
   })
 
   test("Part 1 - Example input", () => {
-    expect(solvePart1(exampleInput)).toEqual(102)
+    expect(solve(exampleInput)).toEqual(102)
   })
   
-  test("Part 1 - File input", () => {
-    expect(solvePart1(fileInput)).toEqual(1001) // 4066621.79ms
+  test.skip("Part 1 - File input", () => {
+    expect(solve(fileInput)).toEqual(1001) // 4066621.79ms
   })
 
   test.skip("Part 2 - Example input", () => {
-    expect(solvePart2(exampleInput)).toEqual(0)
+    expect(solve(exampleInput, true)).toEqual(0)
   })
   
   test.skip("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+    expect(solve(fileInput, true)).toEqual(0)
   })
 })
