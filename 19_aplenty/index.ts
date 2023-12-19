@@ -35,11 +35,10 @@ const regex = {
   rule: /(\w)([<>])(\d+):(\w+)/,
   machine: /{x=(\d+),m=(\d+),a=(\d+),s=(\d+)}/,
 }
+
 export const solvePart1 = (input: string) => {
   const [rulesRaw, machinesRaw] = input.split('\n\n').map(s => s.trim())
-
-  const rules = {} as Record<string, Rule[]
-  >
+  const rules = {} as Record<string, Rule[]>
 
   parseInputLines(rulesRaw).forEach(ruleRawStr => {
     const [_, name, rulesStr] = ruleRawStr.match(regex.nameAndRules)!
@@ -66,9 +65,7 @@ export const solvePart1 = (input: string) => {
     })
 
     rules[name] = conditions
-    
   })
-
 
   const machines = parseInputLines(machinesRaw).map(machineRawStr => {
     const [_, x, m, a, s] = machineRawStr.match(regex.machine)!.map(x => parseInt(x))
