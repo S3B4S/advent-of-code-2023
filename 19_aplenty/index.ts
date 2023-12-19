@@ -260,12 +260,6 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
   // Nice log to see the summary for each path
   // console.log(summaries.map(summary => Object.entries(summary).map(([machineType, { gte, lte }]) => `${machineType}: ${gte}-${lte}`).join(', ')))
 
-  let countUniqueCombinations = 0
-  
-  summaries.forEach((summary, i, list) => {
-      countUniqueCombinations += calculateAmountCombinations(summary)
-  })
-
   return summaries.reduce((acc, summary) => acc + calculateAmountCombinations(summary), 0)
 }
 
