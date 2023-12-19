@@ -24,24 +24,12 @@ hdj{m>838:A,pv}
 `.trim()
 
 testWrapper(`Day 19`, () => {
-  test.skip("Part 1 - Example input", () => {
+  test("Part 1 - Example input", () => {
     expect(solvePart1(exampleInput)).toEqual(19114)
   })
   
-  test.skip("Part 1 - File input", () => {
+  test("Part 1 - File input", () => {
     expect(solvePart1(fileInput)).toEqual(402185)
-  })
-
-  test.skip("Part 2 - Example input - smaller", () => {
-    expect(solvePart2(`
-in{s<1351:grq,A}
-qaf{x>2662:A,R}
-iqo{x<1416:A,qaf}
-grq{a<2006:iqo,m>2090:A,R}
-
-{x=787,m=2655,a=1222,s=2876}
-{x=1679,m=44,a=2067,s=496}
-`.trim())).toEqual(0)
   })
 
   test("Part 2 - Interval", () => {
@@ -223,7 +211,7 @@ qe{s<5:A,R}
   })
 
   // Not sure if this is still correct
-  test.skip("Part 2 - Small example - Overlap, second interval does add some more combinations", () => {
+  test("Part 2 - Small example - Overlap, second interval does add some more combinations", () => {
     expect(solvePart2(`
 in{x<3:px,in2}
 px{m>3:mm,R}

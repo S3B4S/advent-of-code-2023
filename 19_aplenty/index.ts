@@ -19,6 +19,17 @@ type Summary = {
   s: Interval,
 }
 
+type Rule = {
+  type: 'condition',
+  machineType: MachineType,
+  comparator: Compataror,
+  value: number,
+  result: string,
+} | {
+  type: 'otherwise',
+  result: string,
+}
+
 const regex = {
   nameAndRules: /(\w+){([\d\w:,<>]+)}/,
   rule: /(\w)([<>])(\d+):(\w+)/,
@@ -27,16 +38,7 @@ const regex = {
 export const solvePart1 = (input: string) => {
   const [rulesRaw, machinesRaw] = input.split('\n\n').map(s => s.trim())
 
-  const rules = {} as Record<string, ({
-      type: 'condition',
-      machineType: MachineType,
-      comparator: Compataror,
-      value: number,
-      result: string,
-    } | {
-      type: 'otherwise',
-      result: string,
-    })[]
+  const rules = {} as Record<string, Rule[]
   >
 
   parseInputLines(rulesRaw).forEach(ruleRawStr => {
@@ -44,7 +46,7 @@ export const solvePart1 = (input: string) => {
     const rulesSpl = rulesStr.split(',') // 1 up to length - 2 are conditions, length - 1 is always accepted
     const conditionsRaw = rulesSpl.slice(0, rulesSpl.length - 1)
     const otherwise = rulesSpl[rulesSpl.length - 1]
-    const conditions = conditionsRaw.map(cond => {
+    const conditions: Rule[] = conditionsRaw.map(cond => {
       const [_, machineType, comparator, value, result] = cond.match(regex.rule)!
       return {
         type: 'condition',
@@ -55,7 +57,6 @@ export const solvePart1 = (input: string) => {
       }
     })
 
-    // Idk why TS is complaining but fix later
     conditions.push({
       type: 'otherwise',
       result: otherwise,
@@ -134,7 +135,7 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
     const rulesSpl = rulesStr.split(',') // 1 up to length - 2 are conditions, length - 1 is always accepted
     const conditionsRaw = rulesSpl.slice(0, rulesSpl.length - 1)
     const otherwise = rulesSpl[rulesSpl.length - 1]
-    const conditions = conditionsRaw.map(cond => {
+    const conditions: Rule[] = conditionsRaw.map(cond => {
       const [_, machineType, comparator, value, result] = cond.match(regex.rule)!
       return {
         type: 'condition',
@@ -145,7 +146,6 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
       }
     })
 
-    // Idk why TS is complaining but fix later
     conditions.push({
       type: 'otherwise',
       result: otherwise,
@@ -157,16 +157,16 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
     allRules[name] = conditions
   })
 
-  const recurse = (rules: Rule[], history: string[]) => {
+  // I had this type at first, but it was giving me a "Type instantiation is excessively deep and possibly infinite" error
+  // later on, so I just reverted it to any and saved myself a headache
+  // type RecArray = string[] | RecArray[]
+  const recurse = (rules: Rule[], history: string[]): any => {
     const ret = rules.map((rule, i, allInnerRules) => {
-      // Otherwise is not a base case, since the result might be another rule
-      // We should negate all the prev rules in otherwise and remove the same
-      // amount of rules that we had checked
-      // Actually, we should always negate previous rules
-      const prevRules = allInnerRules.slice(0, i)
+      // We should negate all previous rules, since that's how
+      // we came to arrive at the current rule
+      // We can assert as only of type condition, since the last rule is always the "otherwise"
+      const prevRules = allInnerRules.slice(0, i) as Extract<Rule, { type: 'condition' }>[]
       const invertedPrevRules = prevRules.map(prevRule => {
-        if (prevRule.type !== 'condition') return prevRule
-
         return prevRule.machineType + match(prevRule.comparator)
           .with('<', () => '>=' + prevRule.value)
           .with('>', () => '<=' + prevRule.value)
@@ -185,9 +185,9 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
         return [...history, ...invertedPrevRules, rule.machineType + rule.comparator + rule.value, rule.result]
       }
   
-      if (rule.type === 'condition') {
-        return recurse(allRules[rule.result], [...history, ...invertedPrevRules, rule.machineType + rule.comparator + rule.value])
-      }
+      // The last remaining condition
+      // if (rule.type === 'condition') {
+      return recurse(allRules[rule.result], [...history, ...invertedPrevRules, rule.machineType + rule.comparator + rule.value])
     })
 
     return ret
@@ -200,7 +200,7 @@ export const solvePart2 = (input: string, min: number = 1, max: number = 4000) =
   
   // We're going to flatten the tree, and then accumulate the pieces that end in an 'A"
   // This gives us a list of all accepted paths
-  const acceptedPaths = decisionTree.flat(Infinity).reduce((acc, path) => {
+  const acceptedPaths = (decisionTree.flat(Infinity) as string[]).reduce((acc, path) => {
     if (path === 'A') {
       acc.push([])
     } else if (path === 'R') {
