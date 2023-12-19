@@ -7,6 +7,18 @@ type MachineType = 'x' | 'm' | 'a' | 's'
 type Compataror = '<' | '>'
 type TypeRule = 'condition' | 'otherwise'
 
+type Interval = {
+  gte: number,
+  lte: number,
+}
+
+type Summary = {
+  x: Interval,
+  m: Interval,
+  a: Interval,
+  s: Interval,
+}
+
 const regex = {
   nameAndRules: /(\w+){([\d\w:,<>]+)}/,
   rule: /(\w)([<>])(\d+):(\w+)/,
@@ -56,26 +68,20 @@ export const solvePart1 = (input: string) => {
     
   })
 
-  // console.log(rules)
 
   const machines = parseInputLines(machinesRaw).map(machineRawStr => {
     const [_, x, m, a, s] = machineRawStr.match(regex.machine)!.map(x => parseInt(x))
     return { x, m, a, s } as Record<MachineType, number>
   }) as Record<MachineType, number>[]
   
-  // console.log(machines)
 
   const acceptedMachines = [] as Record<MachineType, number>[]
   machines.forEach(machine => {
-    // console.log(machine)
     let result = 'unresolved' as 'unresolved' | 'accepted' | 'rejected'
     let currentRules = rules['in']
     while(result === 'unresolved') {
       const ruleThatPassed = currentRules.find(rule => {
         if (rule.type === 'otherwise') return true
-        // console.log('test')
-        // console.log(rule)
-        // console.log(machine[rule.machineType] + rule.comparator + rule.value)
 
         const hasPassed = match(rule.comparator)
           .with('<', () => machine[rule.machineType] < rule.value)
@@ -103,7 +109,221 @@ export const solvePart1 = (input: string) => {
   return acceptedMachines.reduce((acc, machine) => acc + machine.x + machine.m + machine.a + machine.s, 0)
 }
 
-export const solvePart2 = (input: string) => {
-  return 0
+// In part 2 I no longer care about the machines
+// Rather, I will build a "decision" tree
+// and then retrace all paths which leads to "A"
+// That will give us all the intervals we need for each machine part
+export const solvePart2 = (input: string, min: number = 1, max: number = 4000) => {
+  const [rulesRaw] = input.split('\n\n').map(s => s.trim())
+
+  type Rule = {
+    type: 'condition',
+    machineType: MachineType,
+    comparator: Compataror,
+    value: number,
+    result: string,
+  } | {
+    type: 'otherwise',
+    result: string,
+  }
+
+  const allRules = {} as Record<string, Rule[]>
+
+  parseInputLines(rulesRaw).forEach(ruleRawStr => {
+    const [_, name, rulesStr] = ruleRawStr.match(regex.nameAndRules)!
+    const rulesSpl = rulesStr.split(',') // 1 up to length - 2 are conditions, length - 1 is always accepted
+    const conditionsRaw = rulesSpl.slice(0, rulesSpl.length - 1)
+    const otherwise = rulesSpl[rulesSpl.length - 1]
+    const conditions = conditionsRaw.map(cond => {
+      const [_, machineType, comparator, value, result] = cond.match(regex.rule)!
+      return {
+        type: 'condition',
+        machineType: machineType as MachineType,
+        comparator: comparator as Compataror, 
+        value: parseInt(value),
+        result,
+      }
+    })
+
+    // Idk why TS is complaining but fix later
+    conditions.push({
+      type: 'otherwise',
+      result: otherwise,
+    } as {
+      type: 'otherwise',
+      result: string,
+    })
+
+    allRules[name] = conditions
+  })
+
+  const recurse = (rules: Rule[], history: string[]) => {
+    const ret = rules.map((rule, i, allInnerRules) => {
+      // Otherwise is not a base case, since the result might be another rule
+      // We should negate all the prev rules in otherwise and remove the same
+      // amount of rules that we had checked
+      // Actually, we should always negate previous rules
+      const prevRules = allInnerRules.slice(0, i)
+      const invertedPrevRules = prevRules.map(prevRule => {
+        if (prevRule.type !== 'condition') return prevRule
+
+        return prevRule.machineType + match(prevRule.comparator)
+          .with('<', () => '>=' + prevRule.value)
+          .with('>', () => '<=' + prevRule.value)
+          .exhaustive()
+      })
+
+      if (rule.type === 'otherwise' ) {
+        if (rule.result === 'A' || rule.result === 'R') {
+          return [...history, ...invertedPrevRules, rule.result]
+        } else {
+          return recurse(allRules[rule.result], [...history, ...invertedPrevRules])
+        }
+      }
+
+      if (rule.result === 'A' || rule.result === 'R') {
+        return [...history, ...invertedPrevRules, rule.machineType + rule.comparator + rule.value, rule.result]
+      }
+  
+      if (rule.type === 'condition') {
+        return recurse(allRules[rule.result], [...history, ...invertedPrevRules, rule.machineType + rule.comparator + rule.value])
+      }
+    })
+
+    return ret
+  }
+
+  const start = allRules['in']
+
+  // Recursively call each condition, and keep track of the path leading to it
+  const decisionTree = recurse(start, [])
+  
+  // We're going to flatten the tree, and then accumulate the pieces that end in an 'A"
+  // This gives us a list of all accepted paths
+  const acceptedPaths = decisionTree.flat(Infinity).reduce((acc, path) => {
+    if (path === 'A') {
+      acc.push([])
+    } else if (path === 'R') {
+      acc.pop()
+      acc.push([])
+    } else {
+      acc[acc.length - 1].push(path)
+    }
+    return acc
+  }, [[]] as string[][]).slice(0, -1) // Remove the last empty array
+
+  const summaries = acceptedPaths.map(path => {
+    const summary = {
+      x: {
+        gte: min,
+        lte: max,
+      },
+      m: {
+        gte: min,
+        lte: max,
+      },
+      a: {
+        gte: min,
+        lte: max,
+      },
+      s: {
+        gte: min,
+        lte: max,
+      },
+    }
+
+    path.forEach(rule => {
+      const [_, machineType, comparator, value] = rule.match(/(\w)([<>]|>=|<=)(\d+)/)! as [string, MachineType, Compataror | '<=' | '>=', string]
+
+      match(comparator)
+        .with('<', () => {
+          summary[machineType].lte = Math.min(summary[machineType].lte, parseInt(value) - 1)
+        })
+        .with('>', () => {
+          summary[machineType].gte = Math.max(summary[machineType].gte, parseInt(value) + 1)
+        })
+        .with('>=', () => {
+          summary[machineType].gte = Math.max(summary[machineType].gte, parseInt(value))
+        })
+        .with('<=', () => {
+          summary[machineType].lte = Math.min(summary[machineType].lte, parseInt(value))
+        })
+    })
+
+    return summary
+  }) as Summary[]
+
+  // Now, we want the amount per interval for every rule,
+  // so we can minus by the minumum
+  // and then sum the rest
+
+  // Nice log to see the summary for each path
+  // console.log(summaries.map(summary => Object.entries(summary).map(([machineType, { gte, lte }]) => `${machineType}: ${gte}-${lte}`).join(', ')))
+
+  let countUniqueCombinations = 0
+  
+  summaries.forEach((summary, i, list) => {
+      countUniqueCombinations += calculateAmountCombinations(summary)
+  })
+
+  return summaries.reduce((acc, summary) => acc + calculateAmountCombinations(summary), 0)
 }
-// 
+
+export const hasOverlap = (a: Interval, b: Interval): boolean => {
+  return a.gte <= b.lte && b.gte <= a.lte
+}
+
+export const overlapInInterval = (a: Interval, b: Interval): Interval => {
+  if (a.gte > b.lte || b.gte > a.lte) return { gte: 0, lte: 0 }
+
+  return {
+    gte: Math.max(a.gte, b.gte),
+    lte: Math.min(a.lte, b.lte),
+  }
+}
+
+export const minusIntervalFromList = (a: Interval, b: Interval[]): Interval[] => {
+  return b.reduce((acc, interval) => {
+    return acc.flatMap(x => minusInterval(x, interval))
+  }, [a])
+}
+
+// Given interval a and b, the interval cuts into a and returns the new interval(s)
+export const minusInterval = (a: Interval, b: Interval): Interval[] => {
+  // No overlap at aall
+  if (hasOverlap(a, b) === false) return [a]
+
+  const ret = [] as Interval[]
+  
+  // Equal
+  if (a.gte === b.gte && a.lte === b.lte) return [{
+    gte: 0,
+    lte: 0,
+  }]
+
+  // a is encapsulated by b
+  if (a.gte >= b.gte && a.lte <= b.lte) return [{
+    gte: 0,
+    lte: 0,
+  }]
+
+  if (a.gte < b.gte) {
+    ret.push({
+      gte: a.gte,
+      lte: b.gte - 1,
+    })
+  }
+
+  if (a.lte > b.lte) {
+    ret.push({
+      gte: b.lte + 1,
+      lte: a.lte,
+    })
+  }
+  
+  return ret
+}
+
+const calculateAmountCombinations = (input: Summary) => {
+  return (input.x.lte - input.x.gte + 1) * (input.m.lte - input.m.gte + 1) * (input.a.lte - input.a.gte + 1) * (input.s.lte - input.s.gte + 1)
+}
