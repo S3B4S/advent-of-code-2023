@@ -70,6 +70,6 @@ U 3 (#0000b3)
   })
   
   test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(0)
+    expect(solvePart2(fileInput)).toBeGreaterThan(18184440404388)
   })
 })
