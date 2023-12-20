@@ -113,6 +113,91 @@ export const coordStringToCoordRecord = (s: string): CoordinateRecord => {
 }
 export const unserialiseCoord = coordStringToCoordRecord
 
+/**
+ * Iterates over the elements of a 2D map in a given direction from a starting point.
+ *
+ * @param coordinate The starting point [row, column] from which to begin the iteration.
+ * @param map The 2D array to iterate over.
+ * @returns An object with four properties: "North", "East", "South", and "West".
+ * Each property is a function that takes a callback as an argument, and will call
+ * the callback for each element in the map starting from the starting point in the
+ * specified direction, until the callback returns a truthy value or the edge of the
+ * map is reached.
+ */
+export const directionIteratorUntil = <T>([row, column]: Coordinate, map: T[][]) => {
+  type CallbackFn = (t: T) => boolean
+  return {
+    North: (fn: CallbackFn) => {
+      for (let targetRow = row - 1; targetRow >= 0; targetRow--) {
+        if (fn(map[targetRow][column])) return
+      }
+    },
+    East: (fn: CallbackFn) => {
+      for (let targetColumn = column + 1; targetColumn < map[0].length; targetColumn++) {
+        if (fn(map[row][targetColumn])) return
+      }
+    },
+    South: (fn: CallbackFn) => {
+      for (let targetRow = row + 1; targetRow < map.length; targetRow++) {
+        if (fn(map[targetRow][column])) return
+      }
+    },
+    West: (fn: CallbackFn) => {
+      for (let targetColumn = column - 1; targetColumn >= 0; targetColumn--) {
+        if (fn(map[row][targetColumn])) return
+      }
+    },
+  }
+}
+
+export const directionIterator = <T>([row, column]: Coordinate, map: T[][]) => {
+  type CallbackFn = (t: T) => boolean
+  let currentPosition = { y: row, x: column }
+
+  return {
+    North: () => {
+      currentPosition = {
+        ...currentPosition,
+        y: currentPosition.y - 1,
+      }
+
+      if (currentPosition.y < 0) return undefined
+
+      return {tile: map[currentPosition.y][currentPosition.x], coordinate: currentPosition }
+    },
+    East: () => {
+      currentPosition = {
+        ...currentPosition,
+        x: currentPosition.x + 1,
+      }
+
+      if (currentPosition.x >= map[0].length) return undefined
+
+      return {tile: map[currentPosition.y][currentPosition.x], coordinate: currentPosition }
+    },
+    South: () => {
+      currentPosition = {
+        ...currentPosition,
+        y: currentPosition.y + 1,
+      }
+
+      if (currentPosition.y >= map.length) return undefined
+
+      return {tile: map[currentPosition.y][currentPosition.x], coordinate: currentPosition }
+    },
+    West: () => {
+      currentPosition = {
+        ...currentPosition,
+        x: currentPosition.x - 1,
+      }
+
+      if (currentPosition.x < 0) return undefined
+
+      return {tile: map[currentPosition.y][currentPosition.x], coordinate: currentPosition }
+    },
+  }
+} 
+
 // @TODO would be cool if I could pass in record as characters as type parameter to board
 /**
  * m x n board
@@ -286,6 +371,14 @@ export class Board<T> {
       ...c,
       tile: this.get(c)
     }))
+  }
+
+  iterateInDirection(startingPoint: CoordinateRecord) {
+    return directionIterator([startingPoint.y, startingPoint.x], this.content)
+  }
+
+  iterateInDirectionUntil(startingPoint: CoordinateRecord) {
+    return directionIteratorUntil([startingPoint.y, startingPoint.x], this.content) 
   }
 
   toString() {
